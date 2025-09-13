@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HepiBite
 
-## Getting Started
+## Aturan Kolaborasi
 
-First, run the development server:
+1. **Diskusi & Persetujuan**: Sebelum melakukan perubahan besar, diskusikan terlebih dahulu di issue atau pull request.
+2. **Code Review**: Setiap perubahan harus melalui proses review sebelum di-merge ke branch utama.
+3. **Commit Message**: Gunakan pesan commit yang jelas dan deskriptif.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Penamaan Branch
+
+Gunakan format berikut untuk penamaan branch:
+
+- `feat/nama-fitur` — Untuk penambahan fitur baru (feature)
+- `fix/nama-perbaikan` — Untuk perbaikan bug
+- `chore/nama-tugas` — Untuk tugas non-fungsional (misal: update dependensi)
+- `docs/nama-dokumentasi` — Untuk perubahan dokumentasi
+- `refactor/nama-refactor` — Untuk refaktor kode
+
+Contoh:
+
+```
+feat/auth-login
+fix/navbar-overlap
+chore/update-eslint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Panduan Menjalankan Project (Development)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install Dependencies**
+   Jalankan perintah berikut:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   npm install
+   ```
 
-## Learn More
+2. **Migrasi Database (Prisma)**
+   Jalankan migrasi agar database sesuai dengan schema:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Menjalankan Project**
+   Jalankan server development:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+4. **(Opsional) Generate Prisma Client**
+   Jika ada perubahan pada schema:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npx prisma generate
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Testing**
+   (Tambahkan instruksi testing jika sudah tersedia)
+
+---
+
+Silakan update bagian ini jika ada perubahan workflow atau tools.
