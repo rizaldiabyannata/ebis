@@ -6,7 +6,6 @@ import { mockProducts } from "@/lib/mock-data";
 import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormField,
@@ -19,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { Product } from "@/components/product-card";
 import { toast } from "sonner";
+import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 
 export default function ProductEditPage({
   params,
@@ -96,10 +96,7 @@ export default function ProductEditPage({
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="e.g. A timeless piece for any wardrobe."
-                      />
+                      <SimpleEditor />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
