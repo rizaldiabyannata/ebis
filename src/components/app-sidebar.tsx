@@ -36,16 +36,16 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "All Products",
+          url: "/admin/products",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Archived",
+          url: "/admin/products/archived",
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Store",
+          url: "/admin/products/store",
         },
       ],
     },

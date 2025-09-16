@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -130,7 +132,7 @@ function AdminControls({
       <Button asChild variant="outline" className="flex-1">
         <Link href={`/products/${productId}`}>Preview</Link>
       </Button>
-      <Button asChild className="flex-1">
+      <Button asChild className="flex-1 dark:text-white">
         <Link href={`/admin/products/${productId}/edit`}>Update</Link>
       </Button>
       <AlertDialog>
