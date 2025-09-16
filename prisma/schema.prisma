@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -43,7 +43,7 @@ model ProductVariant {
   price        Decimal
   stock        Int
   productId    Int           @map("product_id")
-  product      Product       @relation(fields: [productId], references: [id])
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   orderDetails OrderDetail[]
 
   @@map("product_variants")
@@ -54,7 +54,7 @@ model ProductImage {
   imageUrl  String  @map("image_url")
   isMain    Boolean @default(false) @map("is_main")
   productId Int     @map("product_id")
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
 }
