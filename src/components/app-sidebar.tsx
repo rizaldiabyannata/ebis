@@ -14,7 +14,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
   user: {
     name: "shadcn",
@@ -36,16 +35,16 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "All Products",
+          url: "/admin/products",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Archived",
+          url: "/admin/products/archived",
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Store",
+          url: "/admin/products/store",
         },
       ],
     },
@@ -55,16 +54,8 @@ const data = {
       icon: Users,
       items: [
         {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "All Users",
+          url: "/admin/users",
         },
       ],
     },
@@ -74,20 +65,16 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Orders Overview",
+          url: "/admin/orders",
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "Orders History",
+          url: "/admin/orders/history",
         },
         {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Order Analytics",
+          url: "/admin/orders/analytics",
         },
       ],
     },
