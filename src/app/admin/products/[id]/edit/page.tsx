@@ -43,6 +43,8 @@ export default function ProductEditPage({
   }
 
   const handleSubmit = (values: any) => {
+    // NOTE: Saat ini imageUrls berisi Object URL (blob:...) hasil dari Input File.
+    // Untuk produksi: lakukan upload ke storage/CDN lalu ganti array ini dengan URL permanen.
     const updatedProduct: Product = {
       id: product.id,
       name: values.name,
@@ -124,43 +126,54 @@ export default function ProductEditPage({
                 name="imageUrls"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image URLs</FormLabel>
-                    <div className="space-y-2">
-                      {field.value.map((url: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Input
-                            type="url"
-                            value={url}
-                            onChange={(e) => {
-                              const newUrls = [...field.value];
-                              newUrls[index] = e.target.value;
-                              field.onChange(newUrls);
-                            }}
-                            placeholder="https://example.com/image.png"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => {
-                              const newUrls = field.value.filter(
-                                (_: string, i: number) => i !== index
-                              );
-                              field.onChange(newUrls);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => field.onChange([...field.value, ""])}
-                      >
-                        Add Image URL
-                      </Button>
-                    </div>
+                    <FormLabel>Images</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => {
+                            const files = e.target.files
+                              ? Array.from(e.target.files)
+                              : [];
+                            const objectUrls = files.map((f) =>
+                              URL.createObjectURL(f)
+                            );
+                            const merged = [...field.value, ...objectUrls];
+                            field.onChange(merged);
+                          }}
+                        />
+                        {field.value?.length > 0 && (
+                          <div className="grid grid-cols-3 gap-3">
+                            {field.value.map((url: string, index: number) => (
+                              <div
+                                key={index}
+                                className="group relative rounded-md overflow-hidden border"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`Image ${index + 1}`}
+                                  className="h-28 w-full object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  className="absolute top-1 right-1 inline-flex items-center justify-center rounded bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 text-[11px]"
+                                  onClick={() => {
+                                    const filtered = field.value.filter(
+                                      (_: string, i: number) => i !== index
+                                    );
+                                    field.onChange(filtered);
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
