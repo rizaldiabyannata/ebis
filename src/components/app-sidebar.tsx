@@ -55,15 +55,7 @@ const data = {
       icon: Users,
       items: [
         {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
+          title: "All Users",
           url: "#",
         },
       ],
@@ -74,20 +66,16 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Orders Overview",
+          url: "/admin/orders",
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "Orders History",
+          url: "/admin/orders/history",
         },
         {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Order Analytics",
+          url: "/admin/orders/analytics",
         },
       ],
     },
