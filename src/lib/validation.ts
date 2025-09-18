@@ -165,6 +165,11 @@ export const createProductSchema = registry.register(
   })
 );
 
+// Export input types for use in routes
+export type ProductImageInput = z.infer<typeof productImageSchema>;
+export type ProductVariantInput = z.infer<typeof productVariantSchema>;
+export type CreateProductRequest = z.infer<typeof createProductSchema>;
+
 export const updateProductSchema = registry.register(
   'UpdateProductRequest',
   z.object({
@@ -240,6 +245,9 @@ export const createOrderSchema = registry.register(
     voucherCode: z.string().optional(),
   })
 );
+
+export type CreateOrderDetail = z.infer<typeof createOrderDetailSchema>;
+export type CreateOrderRequest = z.infer<typeof createOrderSchema>;
 
 export const updateDeliverySchema = registry.register(
   'UpdateDeliveryRequest',

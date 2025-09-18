@@ -58,7 +58,7 @@ function UserProductCard({ product }: { product: Product }) {
           <CardHeader className="p-0">
             <div className="relative h-48 w-full">
               <Image
-                src={product.imageUrls[0]}
+                src={product.imageUrls[0] ?? "/next.svg"}
                 alt={product.name}
                 layout="fill"
                 objectFit="cover"
@@ -97,7 +97,7 @@ function AdminProductCard({
       <CardHeader className="p-0">
         <div className="relative h-48 w-full">
           <Image
-            src={product.imageUrls[0]}
+            src={product.imageUrls[0] ?? "/next.svg"}
             alt={product.name}
             layout="fill"
             objectFit="cover"

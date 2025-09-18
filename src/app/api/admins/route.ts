@@ -8,7 +8,7 @@ function exclude<Admin, Key extends keyof Admin>(
   admin: Admin,
   keys: Key[]
 ): Omit<Admin, Key> {
-  for (let key of keys) {
+  for (const key of keys) {
     delete admin[key];
   }
   return admin;

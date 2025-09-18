@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { createOrderSchema } from '@/lib/validation';
+import { createOrderSchema, CreateOrderDetail } from '@/lib/validation';
 import { randomBytes } from 'crypto';
 
 /**
@@ -101,9 +101,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid request", details: parsed.error.issues }, { status: 400 });
     }
 
-    const { orderDetails, delivery, payment, voucherCode } = parsed.data;
+  const { delivery, payment, voucherCode } = parsed.data;
+  const orderDetails: CreateOrderDetail[] = parsed.data.orderDetails;
 
-    const variantIds = orderDetails.map(item => item.variantId);
+  const variantIds = orderDetails.map((item: CreateOrderDetail) => item.variantId);
     const variants = await prisma.productVariant.findMany({
       where: { id: { in: variantIds } },
     });
@@ -134,7 +135,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const subtotal = orderDetails.reduce((acc, item) => {
+    const subtotal = orderDetails.reduce((acc: number, item: CreateOrderDetail) => {
       const variant = variants.find(v => v.id === item.variantId)!;
       return acc + (Number(variant.price) * item.quantity);
     }, 0);
@@ -174,7 +175,7 @@ export async function POST(request: Request) {
           totalFinal,
           voucherId: voucher?.id,
           orderDetails: {
-            create: orderDetails.map(item => {
+            create: orderDetails.map((item: CreateOrderDetail) => {
               const variant = variants.find(v => v.id === item.variantId)!;
               return {
                 variantId: item.variantId,

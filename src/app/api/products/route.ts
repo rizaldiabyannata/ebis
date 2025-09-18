@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { createProductSchema } from '@/lib/validation';
+import { createProductSchema, ProductImageInput } from '@/lib/validation';
 
 /**
  * @openapi
@@ -98,6 +98,7 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+    console.log('Request body:', request.json());
     const body = await request.json();
     const parsed = createProductSchema.safeParse(body);
 
@@ -106,14 +107,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
-    const { name, description, categoryId, images, variants } = parsed.data;
+  const { name, description, categoryId } = parsed.data;
+  const images: ProductImageInput[] = parsed.data.images;
+  const variants = parsed.data.variants;
 
     const category = await prisma.category.findUnique({ where: { id: categoryId } });
     if (!category) {
         return NextResponse.json({ error: `Category with ID ${categoryId} not found` }, { status: 404 });
     }
 
-    const mainImageCount = images.filter(img => img.isMain).length;
+  const mainImageCount = images.filter((img: ProductImageInput) => img.isMain).length;
     if (mainImageCount === 0) {
         images[0].isMain = true;
     } else if (mainImageCount > 1) {
