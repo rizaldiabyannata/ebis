@@ -4,13 +4,10 @@ import prisma from '@/lib/prisma';
 // GET /api/orders/[id]
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const order = await prisma.order.findUnique({
-      where: { id },
+  where: { id },
       include: {
         orderDetails: {
           include: {

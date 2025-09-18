@@ -5,10 +5,7 @@ import { updateProductSchema } from '@/lib/validation';
 // GET /api/products/[id]
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const product = await prisma.product.findUnique({
       where: { id },
@@ -33,18 +30,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PUT /api/products/[id]
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
-        const id = parseInt(params.id, 10);
-        if (isNaN(id)) {
-            return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-        }
+    const id = params.id;
 
         const body = await request.json();
         const parsed = updateProductSchema.safeParse(body);
 
-        if (!parsed.success) {
-            const { errors } = parsed.error;
-            return NextResponse.json({ error: 'Invalid request', details: errors }, { status: 400 });
-        }
+    if (!parsed.success) {
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
+    }
 
         const { name, description, categoryId } = parsed.data;
 
@@ -78,10 +72,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/products/[id]
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     await prisma.product.delete({
       where: { id },

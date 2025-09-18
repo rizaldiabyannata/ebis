@@ -5,17 +5,14 @@ import { updateDeliverySchema } from '@/lib/validation';
 // PUT /api/deliveries/[id]
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const body = await request.json();
     const parsed = updateDeliverySchema.safeParse(body);
 
     if (!parsed.success) {
-      const { errors } = parsed.error;
-      return NextResponse.json({ error: 'Invalid request', details: errors }, { status: 400 });
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
     const { status, driverName } = parsed.data;

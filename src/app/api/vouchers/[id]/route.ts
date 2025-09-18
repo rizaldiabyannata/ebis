@@ -5,10 +5,7 @@ import { updateVoucherSchema } from '@/lib/validation';
 // GET /api/vouchers/[id]
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const voucher = await prisma.voucher.findUnique({
       where: { id },
@@ -28,17 +25,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PUT /api/vouchers/[id]
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const body = await request.json();
     const parsed = updateVoucherSchema.safeParse(body);
 
     if (!parsed.success) {
-      const { errors } = parsed.error;
-      return NextResponse.json({ error: 'Invalid request', details: errors }, { status: 400 });
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
     const { code, ...dataToUpdate } = parsed.data;
@@ -83,10 +77,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/vouchers/[id]
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     await prisma.voucher.delete({
       where: { id },

@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const parsed = createOrderSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request", details: parsed.error.errors }, { status: 400 });
+      return NextResponse.json({ error: "Invalid request", details: parsed.error.issues }, { status: 400 });
     }
 
     const { orderDetails, delivery, payment, voucherCode } = parsed.data;

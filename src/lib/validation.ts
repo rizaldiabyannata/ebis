@@ -15,15 +15,15 @@ export const productVariantSchema = z.object({
 export const createProductSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  categoryId: z.number().int().positive(),
+  categoryId: z.string().uuid(),
   images: z.array(productImageSchema).min(1, "At least one image is required"),
   variants: z.array(productVariantSchema).min(1, "At least one variant is required"),
 });
 
 export const updateProductSchema = z.object({
-    name: z.string().min(1).optional(),
-    description: z.string().min(1).optional(),
-    categoryId: z.number().int().positive().optional(),
+  name: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  categoryId: z.string().uuid().optional(),
 });
 
 export const createVoucherSchema = z.object({
@@ -57,7 +57,7 @@ export const updateAdminSchema = z.object({
 });
 
 const orderDetailSchema = z.object({
-  variantId: z.number().int().positive(),
+  variantId: z.string().uuid(),
   quantity: z.number().int().positive(),
 });
 
@@ -81,4 +81,10 @@ export const createOrderSchema = z.object({
 export const updateDeliverySchema = z.object({
   status: z.string().min(1).optional(),
   driverName: z.string().min(1).optional(),
+});
+
+// Auth
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });

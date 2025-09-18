@@ -18,6 +18,7 @@
         "name": "next"
       }
     ],
+    "useUnknownInCatchVariables": false,
     "paths": {
       "@/*": ["./src/*"]
     }

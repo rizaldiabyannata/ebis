@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 2. Model Definitions
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String           @id @default(uuid())
+  name        String
+  description String
+  categoryId  String           @map("category_id")
+  category    Category         @relation(fields: [categoryId], references: [id])
+  variants    ProductVariant[]
+  images      ProductImage[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id           String        @id @default(uuid())
+  name         String
+  sku          String        @unique
+  price        Decimal
+  stock        Int
+  productId    String        @map("product_id")
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderDetails OrderDetail[]
+
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  imageUrl  String  @map("image_url")
+  isMain    Boolean @default(false) @map("is_main")
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  orderNumber   String        @unique @map("order_number")
+  orderDate     DateTime      @default(now()) @map("order_date")
+  status        String
+  subtotal      Decimal
+  totalDiscount Decimal       @map("total_discount")
+  totalFinal    Decimal       @map("total_final")
+  voucherId     String?       @map("voucher_id")
+  voucher       Voucher?      @relation(fields: [voucherId], references: [id])
+  orderDetails  OrderDetail[]
+  payments      Payment[]
+  delivery      Delivery?
+
+  @@map("orders")
+}
+
+model OrderDetail {
+  id           String         @id @default(uuid())
+  quantity     Int
+  priceAtOrder Decimal        @map("price_at_order")
+  orderId      String         @map("order_id")
+  variantId    String         @map("variant_id")
+  order        Order          @relation(fields: [orderId], references: [id])
+  variant      ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("order_details")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  paymentMethod String   @map("payment_method")
+  amount        Decimal
+  paymentDate   DateTime @map("payment_date")
+  status        String
+  orderId       String   @map("order_id")
+  order         Order    @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Delivery {
+  id             String  @id @default(uuid())
+  address        String
+  recipientName  String  @map("recipient_name")
+  recipientPhone String  @map("recipient_phone")
+  driverName     String? @map("driver_name") // Optional driver name for in-house delivery
+  deliveryFee    Decimal @map("delivery_fee")
+  status         String
+  orderId        String  @unique @map("order_id") // Unique enforces the 1-to-1 relationship
+  order          Order   @relation(fields: [orderId], references: [id])
+
+  @@map("deliveries")
+}
+
+model Voucher {
+  id            String       @id @default(uuid())
+  code          String       @unique
+  discountType  DiscountType @map("discount_type")
+  discountValue Decimal      @map("discount_value")
+  validUntil    DateTime     @map("valid_until")
+  stock         Int
+  orders        Order[]
+
+  @@map("vouchers")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String // IMPORTANT: This should be a hashed password
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// 3. Enum Definitions
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}

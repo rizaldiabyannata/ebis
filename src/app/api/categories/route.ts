@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     const parsed = categorySchema.safeParse(body);
 
     if (!parsed.success) {
-      const { errors } = parsed.error;
-      return NextResponse.json({ error: "Invalid request", details: errors }, { status: 400 });
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: "Invalid request", details: issues }, { status: 400 });
     }
 
     const { name } = parsed.data;

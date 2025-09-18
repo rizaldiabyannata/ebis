@@ -17,10 +17,7 @@ function exclude<Admin, Key extends keyof Admin>(
 // GET /api/admins/[id]
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const admin = await prisma.admin.findUnique({
       where: { id },
@@ -41,17 +38,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PUT /api/admins/[id]
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     const body = await request.json();
     const parsed = updateAdminSchema.safeParse(body);
 
     if (!parsed.success) {
-      const { errors } = parsed.error;
-      return NextResponse.json({ error: 'Invalid request', details: errors }, { status: 400 });
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
     const { password, email, ...dataToUpdate } = parsed.data;
@@ -68,7 +62,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       }
     }
 
-    let hashedPassword;
+  let hashedPassword;
     if (password) {
         hashedPassword = await bcrypt.hash(password, 10);
     }
@@ -80,7 +74,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     };
 
     const updatedAdmin = await prisma.admin.update({
-      where: { id },
+  where: { id },
       data: updatePayload,
     });
 
@@ -101,10 +95,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/admins/[id]
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
-    }
+    const id = params.id;
 
     await prisma.admin.delete({
       where: { id },

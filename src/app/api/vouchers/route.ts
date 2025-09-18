@@ -20,8 +20,8 @@ export async function POST(request: Request) {
     const parsed = createVoucherSchema.safeParse(body);
 
     if (!parsed.success) {
-      const { errors } = parsed.error;
-      return NextResponse.json({ error: 'Invalid request', details: errors }, { status: 400 });
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
     const { code, discountType, discountValue, validUntil, stock } = parsed.data;

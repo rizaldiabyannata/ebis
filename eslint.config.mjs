@@ -20,6 +20,21 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  // Backend/API routes overrides: relax strict rules for error handling in catch blocks
+  {
+    files: [
+      "src/app/api/**/*.ts",
+      "src/app/api/**/*.tsx",
+      "src/lib/**/*.ts",
+      "src/lib/**/*.tsx",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+    },
+  },
 ];
 
 export default eslintConfig;
