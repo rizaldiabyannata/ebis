@@ -1,7 +1,34 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// GET /api/orders/[id]
+/**
+ * @openapi
+ * /orders/{id}:
+ *   get:
+ *     summary: Retrieve a single order by its ID
+ *     description: Fetches detailed information for a specific order. This endpoint is currently public.
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the order.
+ *     responses:
+ *       '200':
+ *         description: The requested order.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       '404':
+ *         description: Order not found.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;

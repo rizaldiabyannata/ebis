@@ -14,7 +14,38 @@ function exclude<Admin, Key extends keyof Admin>(
   return admin;
 }
 
-// GET /api/admins/[id]
+/**
+ * @openapi
+ * /admins/{id}:
+ *   get:
+ *     summary: Retrieve a single admin user by ID
+ *     description: Fetches detailed information for a specific admin user, excluding the password. This is a protected endpoint.
+ *     tags:
+ *       - Admins
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the admin user.
+ *     responses:
+ *       '200':
+ *         description: The requested admin user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Admin'
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: Admin not found.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
@@ -35,7 +66,48 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PUT /api/admins/[id]
+/**
+ * @openapi
+ * /admins/{id}:
+ *   put:
+ *     summary: Update an existing admin user
+ *     description: Modifies the details of an existing admin user. This is a protected endpoint.
+ *     tags:
+ *       - Admins
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the admin user to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateAdminRequest'
+ *     responses:
+ *       '200':
+ *         description: The updated admin user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Admin'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: Admin not found.
+ *       '409':
+ *         description: Another admin with the same email already exists.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
@@ -74,7 +146,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     };
 
     const updatedAdmin = await prisma.admin.update({
-  where: { id },
+      where: { id },
       data: updatePayload,
     });
 
@@ -92,7 +164,34 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/admins/[id]
+/**
+ * @openapi
+ * /admins/{id}:
+ *   delete:
+ *     summary: Delete an admin user
+ *     description: Permanently removes an admin user from the database. This is a protected endpoint.
+ *     tags:
+ *       - Admins
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the admin user to delete.
+ *     responses:
+ *       '204':
+ *         description: The admin user was deleted successfully. No content is returned.
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: Admin not found.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;

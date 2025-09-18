@@ -2,6 +2,38 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthCookie, verifyToken } from '@/lib/auth';
 
+/**
+ * @openapi
+ * /auth/me:
+ *   get:
+ *     summary: Get current user details
+ *     description: |
+ *       Retrieves the details of the currently authenticated admin user based on the `auth_token` cookie.
+ *       This is a protected endpoint.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       '200':
+ *         description: The details of the current user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginSuccessResponse'
+ *       '401':
+ *         description: Unauthorized, authentication token is missing or invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function GET() {
   try {
     const token = await getAuthCookie();
@@ -17,6 +49,7 @@ export async function GET() {
     const adminId = payload.sub;
     const admin = await prisma.admin.findUnique({ where: { id: adminId } });
     if (!admin) {
+      // This case might happen if the user was deleted but the token is still valid
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

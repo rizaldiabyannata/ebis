@@ -3,7 +3,26 @@ import prisma from '@/lib/prisma';
 import { createOrderSchema } from '@/lib/validation';
 import { randomBytes } from 'crypto';
 
-// GET /api/orders
+/**
+ * @openapi
+ * /orders:
+ *   get:
+ *     summary: Retrieve a list of all orders
+ *     description: Fetches a list of all orders with their details. This endpoint is currently public.
+ *     tags:
+ *       - Orders
+ *     responses:
+ *       '200':
+ *         description: A list of orders.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
@@ -33,7 +52,46 @@ export async function GET() {
 }
 
 
-// POST /api/orders
+/**
+ * @openapi
+ * /orders:
+ *   post:
+ *     summary: Create a new order
+ *     description: |
+ *       Creates a new order. This is a complex transactional operation that:
+ *       1. Validates product stock.
+ *       2. Validates an optional voucher.
+ *       3. Creates the order, order details, delivery, and payment records.
+ *       4. Decrements product variant stock and voucher stock.
+ *       This is a protected endpoint.
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateOrderRequest'
+ *     responses:
+ *       '201':
+ *         description: The order was created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       '400':
+ *         description: Bad request (e.g., invalid input, expired voucher).
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: A product variant or voucher was not found.
+ *       '409':
+ *         description: Conflict, not enough stock for a product variant.
+ *       '500':
+ *         description: Internal server error during the transaction.
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();

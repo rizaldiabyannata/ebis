@@ -2,7 +2,30 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createVoucherSchema } from '@/lib/validation';
 
-// GET /api/vouchers
+/**
+ * @openapi
+ * /vouchers:
+ *   get:
+ *     summary: Retrieve a list of all vouchers
+ *     description: Fetches a list of all available vouchers. This is a protected endpoint.
+ *     tags:
+ *       - Vouchers
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       '200':
+ *         description: A list of vouchers.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Voucher'
+ *       '401':
+ *         description: Unauthorized.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function GET() {
   try {
     const vouchers = await prisma.voucher.findMany();
@@ -13,7 +36,38 @@ export async function GET() {
   }
 }
 
-// POST /api/vouchers
+/**
+ * @openapi
+ * /vouchers:
+ *   post:
+ *     summary: Create a new voucher
+ *     description: Adds a new voucher to the database. This is a protected endpoint.
+ *     tags:
+ *       - Vouchers
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateVoucherRequest'
+ *     responses:
+ *       '201':
+ *         description: The voucher was created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Voucher'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *       '401':
+ *         description: Unauthorized.
+ *       '409':
+ *         description: A voucher with this code already exists.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();

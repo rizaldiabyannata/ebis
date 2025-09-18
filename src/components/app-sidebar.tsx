@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Frame, Settings2, Hamburger, Users } from "lucide-react";
+import { BookOpen, Frame, Settings2, Hamburger, Users, FileCode } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -100,6 +100,11 @@ const data = {
           url: "#",
         },
       ],
+    },
+    {
+      title: "API Docs",
+      url: "/admin/docs",
+      icon: FileCode,
     },
   ],
 };

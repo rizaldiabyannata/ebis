@@ -2,7 +2,44 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { updateDeliverySchema } from '@/lib/validation';
 
-// PUT /api/deliveries/[id]
+/**
+ * @openapi
+ * /deliveries/{id}:
+ *   put:
+ *     summary: Update a delivery record
+ *     description: |
+ *       Updates the status and/or driver name for a specific delivery record.
+ *       This endpoint is currently public.
+ *     tags:
+ *       - Deliveries
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the delivery record.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateDeliveryRequest'
+ *     responses:
+ *       '200':
+ *         description: The updated delivery record.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Delivery'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *       '404':
+ *         description: Delivery record not found.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;

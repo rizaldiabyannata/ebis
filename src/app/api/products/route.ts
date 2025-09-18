@@ -2,7 +2,30 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createProductSchema } from '@/lib/validation';
 
-// GET /api/products
+/**
+ * @openapi
+ * /products:
+ *   get:
+ *     summary: Retrieve a list of all products
+ *     description: Fetches a comprehensive list of all products available, including their categories, variants, and images.
+ *     tags:
+ *       - Products
+ *     responses:
+ *       '200':
+ *         description: A list of products.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
@@ -19,7 +42,60 @@ export async function GET() {
   }
 }
 
-// POST /api/products
+/**
+ * @openapi
+ * /products:
+ *   post:
+ *     summary: Create a new product
+ *     description: Adds a new product to the database with specified details, including variants and images. This endpoint is protected and requires authentication.
+ *     tags:
+ *       - Products
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateProductRequest'
+ *     responses:
+ *       '201':
+ *         description: The product was created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '401':
+ *         description: Unauthorized, authentication token is missing or invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '404':
+ *         description: Category not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '409':
+ *         description: Conflict, a product with the same SKU already exists.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();

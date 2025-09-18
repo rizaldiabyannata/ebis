@@ -1,11 +1,39 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { createCategorySchema } from '@/lib/validation';
 
-const categorySchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-});
-
+/**
+ * @openapi
+ * /categories:
+ *   get:
+ *     summary: Retrieve a list of all categories
+ *     description: Fetches a list of all available categories. This endpoint is protected.
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       '200':
+ *         description: A list of categories.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Category'
+ *       '401':
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function GET() {
   try {
     const categories = await prisma.category.findMany();
@@ -16,10 +44,58 @@ export async function GET() {
   }
 }
 
+/**
+ * @openapi
+ * /categories:
+ *   post:
+ *     summary: Create a new category
+ *     description: Adds a new category to the database. This endpoint is protected.
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCategoryRequest'
+ *     responses:
+ *       '201':
+ *         description: The category was created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '401':
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '409':
+ *         description: A category with this name already exists.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parsed = categorySchema.safeParse(body);
+    const parsed = createCategorySchema.safeParse(body);
 
     if (!parsed.success) {
       const { issues } = parsed.error;

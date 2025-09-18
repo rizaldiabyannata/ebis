@@ -1,12 +1,51 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { updateCategorySchema } from '@/lib/validation';
 
-const categorySchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-});
-
-// GET /api/categories/[id]
+/**
+ * @openapi
+ * /categories/{id}:
+ *   get:
+ *     summary: Retrieve a single category by its ID
+ *     description: Fetches detailed information for a specific category. This endpoint is protected.
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the category.
+ *     responses:
+ *       '200':
+ *         description: The requested category.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *       '401':
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '404':
+ *         description: Category not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
@@ -26,13 +65,74 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PUT /api/categories/[id]
+/**
+ * @openapi
+ * /categories/{id}:
+ *   put:
+ *     summary: Update an existing category
+ *     description: Modifies the name of an existing category. This endpoint is protected.
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the category to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateCategoryRequest'
+ *     responses:
+ *       '200':
+ *         description: The updated category.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '401':
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '404':
+ *         description: Category not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '409':
+ *         description: Another category with the same name already exists.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
 
     const body = await request.json();
-    const parsed = categorySchema.safeParse(body);
+    const parsed = updateCategorySchema.safeParse(body);
 
     if (!parsed.success) {
       const { issues } = parsed.error;
@@ -67,7 +167,46 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/categories/[id]
+/**
+ * @openapi
+ * /categories/{id}:
+ *   delete:
+ *     summary: Delete a category
+ *     description: Permanently removes a category from the database. This endpoint is protected.
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the category to delete.
+ *     responses:
+ *       '204':
+ *         description: The category was deleted successfully. No content is returned.
+ *       '401':
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '404':
+ *         description: Category not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;

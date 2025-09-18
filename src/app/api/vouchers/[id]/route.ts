@@ -2,7 +2,38 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { updateVoucherSchema } from '@/lib/validation';
 
-// GET /api/vouchers/[id]
+/**
+ * @openapi
+ * /vouchers/{id}:
+ *   get:
+ *     summary: Retrieve a single voucher by its ID
+ *     description: Fetches detailed information for a specific voucher. This is a protected endpoint.
+ *     tags:
+ *       - Vouchers
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the voucher.
+ *     responses:
+ *       '200':
+ *         description: The requested voucher.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Voucher'
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: Voucher not found.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
@@ -22,7 +53,48 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PUT /api/vouchers/[id]
+/**
+ * @openapi
+ * /vouchers/{id}:
+ *   put:
+ *     summary: Update an existing voucher
+ *     description: Modifies the details of an existing voucher. This is a protected endpoint.
+ *     tags:
+ *       - Vouchers
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the voucher to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateVoucherRequest'
+ *     responses:
+ *       '200':
+ *         description: The updated voucher.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Voucher'
+ *       '400':
+ *         description: Bad request, invalid input data.
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: Voucher not found.
+ *       '409':
+ *         description: Another voucher with the same code already exists.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
@@ -74,7 +146,36 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/vouchers/[id]
+/**
+ * @openapi
+ * /vouchers/{id}:
+ *   delete:
+ *     summary: Delete a voucher
+ *     description: Permanently removes a voucher from the database. This is a protected endpoint.
+ *     tags:
+ *       - Vouchers
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the voucher to delete.
+ *     responses:
+ *       '204':
+ *         description: The voucher was deleted successfully. No content is returned.
+ *       '401':
+ *         description: Unauthorized.
+ *       '404':
+ *         description: Voucher not found.
+ *       '409':
+ *         description: Conflict, cannot delete voucher as it is associated with existing orders.
+ *       '500':
+ *         description: Internal server error.
+ */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
