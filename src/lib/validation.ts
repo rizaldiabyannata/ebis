@@ -142,8 +142,25 @@ const OrderSchema = registry.register(
 
 // --- Request Schemas (from original file, now registered) ---
 
+// Accept absolute http(s) URLs or a site-relative path starting with '/'
+const imageUrlSchema = z
+  .string()
+  .refine(
+    (v) => {
+      try {
+        // allow relative path like /uploads/xxx
+        if (v.startsWith('/')) return true;
+        const u = new URL(v);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Invalid image URL' }
+  );
+
 export const productImageSchema = z.object({
-  imageUrl: z.string().url(),
+  imageUrl: imageUrlSchema,
   isMain: z.boolean().default(false),
 });
 

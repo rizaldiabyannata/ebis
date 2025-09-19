@@ -98,8 +98,8 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
-    console.log('Request body:', request.json());
     const body = await request.json();
+    console.log('Request body:', body);
     const parsed = createProductSchema.safeParse(body);
 
     if (!parsed.success) {

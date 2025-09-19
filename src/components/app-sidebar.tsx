@@ -39,6 +39,14 @@ const data = {
           url: "/admin/products",
         },
         {
+          title: "Categories",
+          url: "/admin/categories",
+        },
+        {
+          title: "Vouchers",
+          url: "/admin/vouchers",
+        },
+        {
           title: "Archived",
           url: "/admin/products/archived",
         },
