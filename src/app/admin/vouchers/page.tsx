@@ -42,10 +42,18 @@ export default function VouchersPage() {
     }
   }, []);
 
-  React.useEffect(() => { load(); }, [load]);
+  React.useEffect(() => {
+    load();
+  }, [load]);
 
   const filtered = items.filter((v) =>
-    [v.code, v.discountType, String(v.discountValue), v.validUntil, String(v.stock)]
+    [
+      v.code,
+      v.discountType,
+      String(v.discountValue),
+      v.validUntil,
+      String(v.stock),
+    ]
       .join(" ")
       .toLowerCase()
       .includes(search.toLowerCase())
@@ -71,7 +79,13 @@ export default function VouchersPage() {
       }
       const created: Voucher = await res.json();
       setItems((prev) => [...prev, created]);
-      setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0, validUntil: "", stock: 0 });
+      setNewVoucher({
+        code: "",
+        discountType: "PERCENTAGE",
+        discountValue: 0,
+        validUntil: "",
+        stock: 0,
+      });
       toast.success("Voucher created");
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to create voucher");
@@ -126,30 +140,75 @@ export default function VouchersPage() {
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <CardTitle>Vouchers</CardTitle>
           <div className="flex gap-2 w-full md:w-auto">
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="sm:w-64" />
-            <Button type="button" variant="outline" onClick={load} disabled={loading}>
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="sm:w-64"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={load}
+              disabled={loading}
+            >
               {loading ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-2 sm:grid-cols-6">
-            <Input placeholder="Code" value={newVoucher.code} onChange={(e) => setNewVoucher((nu) => ({ ...nu, code: e.target.value }))} />
+            <Input
+              placeholder="Code"
+              value={newVoucher.code}
+              onChange={(e) =>
+                setNewVoucher((nu) => ({ ...nu, code: e.target.value }))
+              }
+            />
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               value={newVoucher.discountType}
-              onChange={(e) => setNewVoucher((nu) => ({ ...nu, discountType: e.target.value }))}
+              onChange={(e) =>
+                setNewVoucher((nu) => ({ ...nu, discountType: e.target.value }))
+              }
             >
               <option value="PERCENTAGE">PERCENTAGE</option>
               <option value="FIXED_AMOUNT">FIXED_AMOUNT</option>
             </select>
-            <Input type="number" step="0.01" placeholder="Discount Value" value={newVoucher.discountValue}
-              onChange={(e) => setNewVoucher((nu) => ({ ...nu, discountValue: Number(e.target.value) }))} />
-            <Input type="datetime-local" placeholder="Valid Until" value={newVoucher.validUntil}
-              onChange={(e) => setNewVoucher((nu) => ({ ...nu, validUntil: e.target.value }))} />
-            <Input type="number" placeholder="Stock" value={newVoucher.stock}
-              onChange={(e) => setNewVoucher((nu) => ({ ...nu, stock: Number(e.target.value) }))} />
-            <Button type="button" onClick={add}>Add</Button>
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="Discount Value"
+              value={newVoucher.discountValue}
+              onChange={(e) =>
+                setNewVoucher((nu) => ({
+                  ...nu,
+                  discountValue: Number(e.target.value),
+                }))
+              }
+            />
+            <Input
+              type="datetime-local"
+              placeholder="Valid Until"
+              value={newVoucher.validUntil}
+              onChange={(e) =>
+                setNewVoucher((nu) => ({ ...nu, validUntil: e.target.value }))
+              }
+            />
+            <Input
+              type="number"
+              placeholder="Stock"
+              value={newVoucher.stock}
+              onChange={(e) =>
+                setNewVoucher((nu) => ({
+                  ...nu,
+                  stock: Number(e.target.value),
+                }))
+              }
+            />
+            <Button type="button" onClick={add}>
+              Add
+            </Button>
           </div>
 
           <div className="overflow-x-auto rounded-md border">
@@ -167,7 +226,12 @@ export default function VouchersPage() {
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-4 text-center text-muted-foreground">No vouchers</td>
+                    <td
+                      colSpan={6}
+                      className="p-4 text-center text-muted-foreground"
+                    >
+                      No vouchers
+                    </td>
                   </tr>
                 )}
                 {filtered.map((v) => {
@@ -176,50 +240,136 @@ export default function VouchersPage() {
                     <tr key={v.id} className="border-t">
                       <td className="p-2">
                         {editing ? (
-                          <Input value={v.code} onChange={(e) => setItems((prev) => prev.map((x) => x.id === v.id ? { ...x, code: e.target.value } : x))} />
-                        ) : (v.code)}
+                          <Input
+                            value={v.code}
+                            onChange={(e) =>
+                              setItems((prev) =>
+                                prev.map((x) =>
+                                  x.id === v.id
+                                    ? { ...x, code: e.target.value }
+                                    : x
+                                )
+                              )
+                            }
+                          />
+                        ) : (
+                          v.code
+                        )}
                       </td>
                       <td className="p-2">
                         {editing ? (
                           <select
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                             value={v.discountType}
-                            onChange={(e) => setItems((prev) => prev.map((x) => x.id === v.id ? { ...x, discountType: e.target.value } : x))}
+                            onChange={(e) =>
+                              setItems((prev) =>
+                                prev.map((x) =>
+                                  x.id === v.id
+                                    ? { ...x, discountType: e.target.value }
+                                    : x
+                                )
+                              )
+                            }
                           >
                             <option value="PERCENTAGE">PERCENTAGE</option>
                             <option value="FIXED_AMOUNT">FIXED_AMOUNT</option>
                           </select>
-                        ) : (v.discountType)}
+                        ) : (
+                          v.discountType
+                        )}
                       </td>
                       <td className="p-2">
                         {editing ? (
-                          <Input type="number" step="0.01" value={v.discountValue}
-                            onChange={(e) => setItems((prev) => prev.map((x) => x.id === v.id ? { ...x, discountValue: Number(e.target.value) } : x))} />
-                        ) : (v.discountValue)}
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={v.discountValue}
+                            onChange={(e) =>
+                              setItems((prev) =>
+                                prev.map((x) =>
+                                  x.id === v.id
+                                    ? {
+                                        ...x,
+                                        discountValue: Number(e.target.value),
+                                      }
+                                    : x
+                                )
+                              )
+                            }
+                          />
+                        ) : (
+                          v.discountValue
+                        )}
                       </td>
                       <td className="p-2">
                         {editing ? (
-                          <Input type="datetime-local" value={v.validUntil}
-                            onChange={(e) => setItems((prev) => prev.map((x) => x.id === v.id ? { ...x, validUntil: e.target.value } : x))} />
-                        ) : (new Date(v.validUntil).toLocaleString())}
+                          <Input
+                            type="datetime-local"
+                            value={v.validUntil}
+                            onChange={(e) =>
+                              setItems((prev) =>
+                                prev.map((x) =>
+                                  x.id === v.id
+                                    ? { ...x, validUntil: e.target.value }
+                                    : x
+                                )
+                              )
+                            }
+                          />
+                        ) : (
+                          new Date(v.validUntil).toLocaleString()
+                        )}
                       </td>
                       <td className="p-2">
                         {editing ? (
-                          <Input type="number" value={v.stock}
-                            onChange={(e) => setItems((prev) => prev.map((x) => x.id === v.id ? { ...x, stock: Number(e.target.value) } : x))} />
-                        ) : (v.stock)}
+                          <Input
+                            type="number"
+                            value={v.stock}
+                            onChange={(e) =>
+                              setItems((prev) =>
+                                prev.map((x) =>
+                                  x.id === v.id
+                                    ? { ...x, stock: Number(e.target.value) }
+                                    : x
+                                )
+                              )
+                            }
+                          />
+                        ) : (
+                          v.stock
+                        )}
                       </td>
                       <td className="p-2">
                         <div className="flex gap-2">
                           {editing ? (
                             <>
-                              <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
-                              <Button size="sm" onClick={() => update(v)}>Save</Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingId(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button size="sm" onClick={() => update(v)}>
+                                Save
+                              </Button>
                             </>
                           ) : (
                             <>
-                              <Button variant="outline" size="sm" onClick={() => setEditingId(v.id)}>Edit</Button>
-                              <Button variant="destructive" size="sm" onClick={() => del(v.id)}>Delete</Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingId(v.id)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => del(v.id)}
+                              >
+                                Delete
+                              </Button>
                             </>
                           )}
                         </div>

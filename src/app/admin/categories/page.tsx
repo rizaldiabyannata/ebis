@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-interface Category { id: string; name: string }
+interface Category {
+  id: string;
+  name: string;
+}
 
 export default function CategoriesPage() {
   const [items, setItems] = React.useState<Category[]>([]);
@@ -29,9 +32,13 @@ export default function CategoriesPage() {
     }
   }, []);
 
-  React.useEffect(() => { load(); }, [load]);
+  React.useEffect(() => {
+    load();
+  }, [load]);
 
-  const filtered = items.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = items.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   const add = async () => {
     if (!newName.trim()) return;
@@ -96,16 +103,32 @@ export default function CategoriesPage() {
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <CardTitle>Categories</CardTitle>
           <div className="flex gap-2 w-full md:w-auto">
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="sm:w-64" />
-            <Button type="button" variant="outline" onClick={load} disabled={loading}>
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="sm:w-64"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={load}
+              disabled={loading}
+            >
               {loading ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-2 sm:grid-cols-3">
-            <Input placeholder="New category name" value={newName} onChange={(e) => setNewName(e.target.value)} />
-            <Button type="button" onClick={add}>Add</Button>
+            <Input
+              placeholder="New category name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+            <Button type="button" onClick={add}>
+              Add
+            </Button>
           </div>
 
           <div className="overflow-x-auto rounded-md border">
@@ -119,7 +142,12 @@ export default function CategoriesPage() {
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={2} className="p-4 text-center text-muted-foreground">No categories</td>
+                    <td
+                      colSpan={2}
+                      className="p-4 text-center text-muted-foreground"
+                    >
+                      No categories
+                    </td>
                   </tr>
                 )}
                 {filtered.map((c) => {
@@ -130,7 +158,15 @@ export default function CategoriesPage() {
                         {editing ? (
                           <Input
                             value={c.name}
-                            onChange={(e) => setItems((prev) => prev.map((x) => x.id === c.id ? { ...x, name: e.target.value } : x))}
+                            onChange={(e) =>
+                              setItems((prev) =>
+                                prev.map((x) =>
+                                  x.id === c.id
+                                    ? { ...x, name: e.target.value }
+                                    : x
+                                )
+                              )
+                            }
                           />
                         ) : (
                           c.name
@@ -140,13 +176,36 @@ export default function CategoriesPage() {
                         <div className="flex gap-2">
                           {editing ? (
                             <>
-                              <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
-                              <Button size="sm" onClick={() => update(c.id, c.name)}>Save</Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingId(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => update(c.id, c.name)}
+                              >
+                                Save
+                              </Button>
                             </>
                           ) : (
                             <>
-                              <Button variant="outline" size="sm" onClick={() => setEditingId(c.id)}>Edit</Button>
-                              <Button variant="destructive" size="sm" onClick={() => del(c.id)}>Delete</Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingId(c.id)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => del(c.id)}
+                              >
+                                Delete
+                              </Button>
                             </>
                           )}
                         </div>
