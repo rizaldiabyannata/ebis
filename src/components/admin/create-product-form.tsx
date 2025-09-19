@@ -5,7 +5,6 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -13,13 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import {
   Form,
-  FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
+  FormField,
 } from "@/components/ui/form";
 import {
   createProductSchema,
@@ -62,6 +62,19 @@ export function CreateProductForm({
     remove: removeImage,
     update: updateImage,
   } = useFieldArray({ control: form.control, name: "images" });
+
+  // Keep local preview/filename so the image 'stays' visible even if the file input re-renders
+  const [imageMeta, setImageMeta] = React.useState<
+    Record<
+      string,
+      {
+        fileName?: string;
+        preview?: string; // object URL
+        uploadedUrl?: string; // server URL
+        uploading?: boolean;
+      }
+    >
+  >({});
 
   const {
     fields: variantFields,
@@ -195,11 +208,12 @@ export function CreateProductForm({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={4}
-                      placeholder="Short description..."
-                      {...field}
-                    />
+                    <div className="space-y-2">
+                      <SimpleEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -349,19 +363,85 @@ export function CreateProductForm({
                 key={fieldItem.id}
                 className="grid items-end gap-3 md:grid-cols-5"
               >
-                <FormField
-                  control={form.control}
-                  name={`images.${index}.imageUrl` as const}
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-3">
-                      <FormLabel>Image URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormItem className="md:col-span-3 space-y-2">
+                  <FormLabel>Upload Image</FormLabel>
+                  <FormControl>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const id = fieldItem.id;
+                        // Prepare local preview so it "stays" visible
+                        const preview = URL.createObjectURL(file);
+                        setImageMeta((prev) => ({
+                          ...prev,
+                          [id]: {
+                            ...prev[id],
+                            fileName: file.name,
+                            preview,
+                            uploading: true,
+                          },
+                        }));
+                        const data = new FormData();
+                        data.append("file", file);
+                        try {
+                          const res = await fetch("/api/upload", {
+                            method: "POST",
+                            body: data,
+                          });
+                          if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            throw new Error(
+                              err?.error || `Upload failed (${res.status})`
+                            );
+                          }
+                          const json = await res.json();
+                          // Update only the imageUrl field to avoid remounting row
+                          form.setValue(`images.${index}.imageUrl`, json.url, {
+                            shouldDirty: true,
+                          });
+                          setImageMeta((prev) => ({
+                            ...prev,
+                            [id]: {
+                              ...prev[id],
+                              uploadedUrl: json.url,
+                              uploading: false,
+                            },
+                          }));
+                          toast.success("Image uploaded");
+                        } catch (err: any) {
+                          setImageMeta((prev) => ({
+                            ...prev,
+                            [id]: { ...prev[id], uploading: false },
+                          }));
+                          toast.error(err?.message ?? "Upload failed");
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  {/* Show a small preview and filename so the image "stays" visible */}
+                  {imageMeta[fieldItem.id]?.preview ||
+                  form.watch(`images.${index}.imageUrl`) ? (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={
+                          imageMeta[fieldItem.id]?.preview ||
+                          form.watch(`images.${index}.imageUrl`)
+                        }
+                        alt="preview"
+                        className="h-12 w-12 rounded object-cover border"
+                      />
+                      <div className="text-xs text-muted-foreground">
+                        {imageMeta[fieldItem.id]?.fileName || "Uploaded"}
+                      </div>
+                      {imageMeta[fieldItem.id]?.uploading && (
+                        <div className="text-xs">Uploading...</div>
+                      )}
+                    </div>
+                  ) : null}
+                </FormItem>
                 <div className="flex items-center gap-2">
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -379,7 +459,17 @@ export function CreateProductForm({
                     type="button"
                     variant="destructive"
                     size="sm"
-                    onClick={() => removeImage(index)}
+                    onClick={() => {
+                      const id = fieldItem.id;
+                      const meta = imageMeta[id];
+                      if (meta?.preview) URL.revokeObjectURL(meta.preview);
+                      setImageMeta((prev) => {
+                        const next = { ...prev };
+                        delete next[id];
+                        return next;
+                      });
+                      removeImage(index);
+                    }}
                   >
                     Remove
                   </Button>

@@ -174,7 +174,13 @@ const MobileToolbarContent = ({
   </>
 );
 
-export function SimpleEditor() {
+export function SimpleEditor({
+  value,
+  onChange,
+}: {
+  value?: string;
+  onChange?: (html: string) => void;
+}) {
   const isMobile = useIsMobile();
   const { height } = useWindowSize();
   const [mobileView, setMobileView] = React.useState<
@@ -194,6 +200,7 @@ export function SimpleEditor() {
         class: "simple-editor",
       },
     },
+    content: value ?? "",
     extensions: [
       StarterKit.configure({
         horizontalRule: false,
@@ -220,6 +227,11 @@ export function SimpleEditor() {
         onError: (error) => console.error("Upload failed:", error),
       }),
     ],
+    onUpdate: ({ editor }) => {
+      try {
+        onChange?.(editor.getHTML());
+      } catch {}
+    },
   });
 
   const rect = useCursorVisibility({
@@ -232,6 +244,16 @@ export function SimpleEditor() {
       setMobileView("main");
     }
   }, [isMobile, mobileView]);
+
+  // Keep editor content in sync if external value changes
+  React.useEffect(() => {
+    if (editor && typeof value === "string") {
+      const current = editor.getHTML();
+      if (current !== value) {
+        editor.commands.setContent(value, { emitUpdate: false });
+      }
+    }
+  }, [value, editor]);
 
   return (
     <div className="simple-editor-wrapper rounded-md border border-input">

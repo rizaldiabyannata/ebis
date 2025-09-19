@@ -16,6 +16,11 @@ import {
 } from "@/components/ui/sheet";
 import { CreateProductForm } from "@/components/admin/create-product-form";
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -134,7 +139,7 @@ export default function ProductsPage() {
                 <PlusIcon className="mr-2 size-4" /> Add Product
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+            <SheetContent className="w-full sm:max-w-[95vw] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Create Product</SheetTitle>
                 <SheetDescription>
@@ -142,7 +147,7 @@ export default function ProductsPage() {
                   and images.
                 </SheetDescription>
               </SheetHeader>
-              <div className="p-4">
+              <div className="h-full overflow-auto p-4">
                 <CreateProductForm
                   onSuccess={() => {
                     setCreateOpen(false);
@@ -187,7 +192,7 @@ export default function ProductsPage() {
                 <PlusIcon className="mr-2 size-4" /> Add Product
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+            <SheetContent className="w-full sm:max-w-[95vw] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Create Product</SheetTitle>
                 <SheetDescription>
@@ -195,7 +200,7 @@ export default function ProductsPage() {
                   and images.
                 </SheetDescription>
               </SheetHeader>
-              <div className="p-4">
+              <div className="h-full overflow-auto p-4">
                 <CreateProductForm
                   onSuccess={() => {
                     setCreateOpen(false);
