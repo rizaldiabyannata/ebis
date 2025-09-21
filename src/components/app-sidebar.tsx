@@ -7,7 +7,6 @@ import {
   Settings2,
   Hamburger,
   Users,
-  FileCode,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -124,11 +123,6 @@ const data = {
           url: "#",
         },
       ],
-    },
-    {
-      title: "API Docs",
-      url: "/admin/docs",
-      icon: FileCode,
     },
   ],
 };
