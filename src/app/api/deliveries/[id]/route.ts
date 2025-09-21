@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { updateDeliverySchema } from '@/lib/validation';
 
@@ -40,9 +40,9 @@ import { updateDeliverySchema } from '@/lib/validation';
  *       '500':
  *         description: Internal server error.
  */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
 
     const body = await request.json();
     const parsed = updateDeliverySchema.safeParse(body);

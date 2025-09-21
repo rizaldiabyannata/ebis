@@ -3,7 +3,6 @@
 import * as React from "react";
 import { ProductCard, Product as CardProduct } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,11 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { CreateProductForm } from "@/components/admin/create-product-form";
 import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -32,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PlusIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/admin/page-header";
 
 type ApiProduct = {
   id: string;
@@ -112,53 +107,50 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight">Products</h1>
-            <Badge variant="secondary">{products.length}</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Manage your products, variants, and images.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            onClick={loadProducts}
-            aria-label="Refresh products"
-          >
-            <RefreshCcwIcon className="mr-2 size-4" /> Refresh
-          </Button>
-          <Sheet open={createOpen} onOpenChange={setCreateOpen}>
-            <SheetTrigger asChild>
-              <Button type="button" size="sm">
-                <PlusIcon className="mr-2 size-4" /> Add Product
+      <div>
+        <PageHeader
+          title="Products"
+          description="Manage your products, variants, and images."
+          count={products.length}
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={loadProducts}
+                aria-label="Refresh products"
+              >
+                <RefreshCcwIcon className="mr-2 size-4" /> Refresh
               </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-[95vw] overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>Create Product</SheetTitle>
-                <SheetDescription>
-                  Fill the form below to add a new product. You can add variants
-                  and images.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="h-full overflow-auto p-4">
-                <CreateProductForm
-                  onSuccess={() => {
-                    setCreateOpen(false);
-                    loadProducts();
-                  }}
-                  onCancel={() => setCreateOpen(false)}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+              <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+                <SheetTrigger asChild>
+                  <Button type="button" size="sm">
+                    <PlusIcon className="mr-2 size-4" /> Add Product
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-[95vw] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Create Product</SheetTitle>
+                    <SheetDescription>
+                      Fill the form below to add a new product. You can add
+                      variants and images.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="h-full overflow-auto p-4">
+                    <CreateProductForm
+                      onSuccess={() => {
+                        setCreateOpen(false);
+                        loadProducts();
+                      }}
+                      onCancel={() => setCreateOpen(false)}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          }
+        />
       </div>
       <Separator />
 

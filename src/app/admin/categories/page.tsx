@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/admin/page-header";
 
 interface Category {
   id: string;
@@ -100,25 +101,31 @@ export default function CategoriesPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <Card>
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <CardTitle>Categories</CardTitle>
-          <div className="flex gap-2 w-full md:w-auto">
-            <Input
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="sm:w-64"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={load}
-              disabled={loading}
-            >
-              {loading ? "Refreshing..." : "Refresh"}
-            </Button>
-          </div>
-        </CardHeader>
+        <div className="p-4">
+          <PageHeader
+            title="Categories"
+            description="Organize products by category."
+            count={items.length}
+            actions={
+              <div className="flex gap-2 w-full md:w-auto">
+                <Input
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="sm:w-64"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={load}
+                  disabled={loading}
+                >
+                  {loading ? "Refreshing..." : "Refresh"}
+                </Button>
+              </div>
+            }
+          />
+        </div>
         <CardContent className="space-y-6">
           <div className="grid gap-2 sm:grid-cols-3">
             <Input

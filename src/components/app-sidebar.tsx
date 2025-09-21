@@ -36,6 +36,11 @@ const data = {
   ],
   navMain: [
     {
+      title: "Dashboard",
+      url: "/admin/dashboard",
+      icon: Frame,
+    },
+    {
       title: "Products",
       url: "#",
       icon: Hamburger,
@@ -82,6 +87,10 @@ const data = {
         {
           title: "Orders Overview",
           url: "/admin/orders",
+        },
+        {
+          title: "Deliveries",
+          url: "/admin/deliveries",
         },
         {
           title: "Orders History",

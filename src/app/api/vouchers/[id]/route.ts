@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { updateVoucherSchema } from '@/lib/validation';
 
@@ -34,9 +34,9 @@ import { updateVoucherSchema } from '@/lib/validation';
  *       '500':
  *         description: Internal server error.
  */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
 
     const voucher = await prisma.voucher.findUnique({
       where: { id },
@@ -95,9 +95,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
  *       '500':
  *         description: Internal server error.
  */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
 
     const body = await request.json();
     const parsed = updateVoucherSchema.safeParse(body);
@@ -176,9 +176,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
  *       '500':
  *         description: Internal server error.
  */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
 
     await prisma.voucher.delete({
       where: { id },

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { updateProductSchema } from '@/lib/validation';
 
@@ -38,9 +38,9 @@ import { updateProductSchema } from '@/lib/validation';
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
 
     const product = await prisma.product.findUnique({
       where: { id },
@@ -118,9 +118,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-    const id = params.id;
+  const { id } = await context.params;
 
         const body = await request.json();
         const parsed = updateProductSchema.safeParse(body);
@@ -204,9 +204,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
 
     await prisma.product.delete({
       where: { id },

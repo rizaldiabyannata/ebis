@@ -24,8 +24,10 @@ export async function middleware(req: NextRequest) {
 
   // Decide if this request should be protected
   const protect =
+    pathname.startsWith('/api/admin/') ||
     pathname.startsWith('/api/admins') ||
     pathname.startsWith('/api/categories') ||
+    pathname.startsWith('/api/deliveries') ||
     pathname.startsWith('/api/vouchers') ||
     (pathname.startsWith('/api/products') && method !== 'GET') ||
     (pathname === '/api/orders' && method === 'POST');
