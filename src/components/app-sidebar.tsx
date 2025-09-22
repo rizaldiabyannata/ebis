@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Frame, Settings2, Hamburger, Users } from "lucide-react";
+import {
+  BookOpen,
+  Frame,
+  Settings2,
+  Hamburger,
+  Users,
+} from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -29,6 +35,11 @@ const data = {
   ],
   navMain: [
     {
+      title: "Dashboard",
+      url: "/admin/dashboard",
+      icon: Frame,
+    },
+    {
       title: "Products",
       url: "#",
       icon: Hamburger,
@@ -37,6 +48,14 @@ const data = {
         {
           title: "All Products",
           url: "/admin/products",
+        },
+        {
+          title: "Categories",
+          url: "/admin/categories",
+        },
+        {
+          title: "Vouchers",
+          url: "/admin/vouchers",
         },
         {
           title: "Archived",
@@ -67,6 +86,10 @@ const data = {
         {
           title: "Orders Overview",
           url: "/admin/orders",
+        },
+        {
+          title: "Deliveries",
+          url: "/admin/deliveries",
         },
         {
           title: "Orders History",

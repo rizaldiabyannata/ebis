@@ -1,8 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { use } from "react";
-import { mockProducts } from "@/lib/mock-data";
+import { use, useEffect, useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,25 +25,59 @@ export default function ProductEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const product = mockProducts.find((p) => p.id === id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
 
   const form = useForm({
     defaultValues: {
-      name: product?.name ?? "",
-      description: product?.description ?? "",
-      price: product?.price ?? 0,
-      imageUrls: product?.imageUrls ?? [],
+      name: "",
+      description: "",
+      price: 0,
+      imageUrls: [] as string[],
     },
   });
 
-  if (!product) {
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setErr(null);
+      try {
+        const res = await fetch(`/api/products/${id}`, { cache: "no-store" });
+        if (res.status === 404) return notFound();
+        if (!res.ok) throw new Error("Failed to load product");
+        const data = await res.json();
+        const mapped: Product = {
+          id: data.id,
+          name: data.name,
+          description: data.description,
+          price: data.variants[0] ? Number(data.variants[0].price) : 0,
+          imageUrls: data.images?.map((img: any) => img.imageUrl) ?? [],
+        };
+        setProduct(mapped);
+        form.reset({
+          name: mapped.name,
+          description: mapped.description,
+          price: mapped.price,
+          imageUrls: mapped.imageUrls,
+        });
+      } catch (e: any) {
+        setErr(e?.message ?? "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id]);
+
+  if (!loading && !product) {
     notFound();
   }
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     // NOTE: Saat ini imageUrls berisi Object URL (blob:...) hasil dari Input File.
     // Untuk produksi: lakukan upload ke storage/CDN lalu ganti array ini dengan URL permanen.
+    if (!product) return;
     const updatedProduct: Product = {
       id: product.id,
       name: values.name,
@@ -52,15 +85,23 @@ export default function ProductEditPage({
       price: values.price,
       imageUrls: values.imageUrls.filter((url: string) => url.trim() !== ""),
     };
-    console.log("Saving product:", updatedProduct);
-
-    const productIndex = mockProducts.findIndex((p) => p.id === product.id);
-    if (productIndex !== -1) {
-      mockProducts[productIndex] = updatedProduct;
+    try {
+      const res = await fetch(`/api/products/${product!.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: updatedProduct.name,
+          description: updatedProduct.description,
+          // price and images are modelled across variants/images in backend;
+          // for a full edit, you'd also send variants/images payloads and update those endpoints.
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to save product");
+      toast.success("Product saved successfully!");
+      router.push("/admin/products");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to save");
     }
-
-    toast.success("Product saved successfully!");
-    router.push("/admin/products");
   };
 
   return (
@@ -70,6 +111,10 @@ export default function ProductEditPage({
           <CardTitle>Product Details</CardTitle>
         </CardHeader>
         <CardContent>
+          {loading && (
+            <div className="text-sm text-muted-foreground">Loading...</div>
+          )}
+          {err && <div className="text-sm text-red-600">{err}</div>}
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}

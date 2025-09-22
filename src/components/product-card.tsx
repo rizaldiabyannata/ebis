@@ -58,7 +58,7 @@ function UserProductCard({ product }: { product: Product }) {
           <CardHeader className="p-0">
             <div className="relative h-48 w-full">
               <Image
-                src={product.imageUrls[0]}
+                src={product.imageUrls[0] ?? "/next.svg"}
                 alt={product.name}
                 layout="fill"
                 objectFit="cover"
@@ -97,7 +97,7 @@ function AdminProductCard({
       <CardHeader className="p-0">
         <div className="relative h-48 w-full">
           <Image
-            src={product.imageUrls[0]}
+            src={product.imageUrls[0] ?? "/next.svg"}
             alt={product.name}
             layout="fill"
             objectFit="cover"
@@ -106,11 +106,8 @@ function AdminProductCard({
       </CardHeader>
       <CardContent className="p-4">
         <CardTitle className="text-lg">{product.name}</CardTitle>
-        <CardDescription className="mt-2 h-10 overflow-hidden text-sm text-gray-500">
-          {product.description}
-        </CardDescription>
         <p className="mt-4 text-xl font-semibold">
-          ${product.price.toFixed(2)}
+          Rp{product.price.toFixed(2)}
         </p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
