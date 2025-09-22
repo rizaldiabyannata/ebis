@@ -30,7 +30,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/api/deliveries') ||
     pathname.startsWith('/api/vouchers') ||
     (pathname.startsWith('/api/products') && method !== 'GET') ||
-    (pathname === '/api/orders' && method === 'POST');
+    pathname.startsWith('/api/orders');
 
   if (!protect) {
     return NextResponse.next();
