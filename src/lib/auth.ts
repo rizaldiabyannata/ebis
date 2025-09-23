@@ -5,7 +5,7 @@ import { SignJWT, jwtVerify } from 'jose';
 export const AUTH_COOKIE_NAME = 'auth_token';
 const alg = 'HS256';
 
-function getSecret(): Uint8Array {
+export function getSecret(): Uint8Array {
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
     throw new Error('AUTH_SECRET is not set');
@@ -66,7 +66,7 @@ export async function getAuthCookie(): Promise<string | null> {
   return store.get(AUTH_COOKIE_NAME)?.value ?? null;
 }
 
-function parseExpiry(input: string): number {
+export function parseExpiry(input: string): number {
   // Supports s, m, h, d
   const match = input.match(/^(\d+)([smhd])$/);
   if (!match) return 7 * 24 * 60 * 60;
@@ -81,7 +81,7 @@ function parseExpiry(input: string): number {
       return value * 3600;
     case 'd':
       return value * 86400;
-    default:
-      return 7 * 24 * 60 * 60;
   }
+  // This part is unreachable because the regex guarantees the unit is one of s, m, h, d
+  return 7 * 24 * 60 * 60;
 }

@@ -14,7 +14,7 @@ export const SuccessResponseSchema = z.object({
 // --- Model Schemas (for documenting API responses) ---
 
 // Accept absolute http(s) URLs or a site-relative path starting with '/'
-const imageUrlSchema = z
+export const imageUrlSchema = z
   .string()
   .refine(
     (v) => {
