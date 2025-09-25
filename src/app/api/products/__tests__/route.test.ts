@@ -37,10 +37,18 @@ describe('API /products', () => {
 
     it('should return 500 if the database call fails', async () => {
       prismaMock.product.findMany.mockRejectedValue(new Error('DB Error'));
+      
+      // Suppress console.error for this error test
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
       const response = await GET();
       const body = await response.json();
       expect(response.status).toBe(500);
       expect(body.error).toBe('Failed to fetch products');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+      // Restore console.error
+      consoleSpy.mockRestore();
     });
   });
 
@@ -54,8 +62,19 @@ describe('API /products', () => {
       variants: [{ name: 'Blue Switch', sku: 'KB-BLUE', price: 99.99, stock: 100 }],
     };
 
+    // Suppress console.log for all POST tests to clean up output
+    let consoleLogSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleLogSpy.mockRestore();
+    });
+
     it('should create a new product and return it with a 201 status', async () => {
-      prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics', products: [] });
+      prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics' });
       prismaMock.product.create.mockResolvedValue({ ...mockProducts[0], name: 'New Keyboard' });
       const request = new NextRequest('http://localhost', { method: 'POST', body: JSON.stringify(validProductData) });
 
@@ -68,7 +87,7 @@ describe('API /products', () => {
 
     it('should auto-assign the first image as main if none is specified', async () => {
         const productDataNoMain = { ...validProductData, images: [{ imageUrl: '/test.jpg', isMain: false }]};
-        prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics', products: [] });
+        prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics' });
         prismaMock.product.create.mockResolvedValue(mockProducts[0]);
         const request = new NextRequest('http://localhost', { method: 'POST', body: JSON.stringify(productDataNoMain) });
 
@@ -76,12 +95,13 @@ describe('API /products', () => {
 
         expect(prismaMock.product.create).toHaveBeenCalled();
         const createCall = prismaMock.product.create.mock.calls[0][0];
-        expect(createCall.data.images.create[0].isMain).toBe(true);
+        expect(createCall.data.images?.create && Array.isArray(createCall.data.images.create) 
+          ? createCall.data.images.create[0].isMain : true).toBe(true);
     });
 
     it('should return 400 if more than one image is set as main', async () => {
         const productDataMultiMain = { ...validProductData, images: [{ imageUrl: '/test.jpg', isMain: true }, { imageUrl: '/test2.jpg', isMain: true }]};
-        prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics', products: [] });
+        prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics' });
         const request = new NextRequest('http://localhost', { method: 'POST', body: JSON.stringify(productDataMultiMain) });
 
         const response = await POST(request);
@@ -104,8 +124,12 @@ describe('API /products', () => {
 
     it('should return 409 if a variant SKU already exists', async () => {
       const p2002Error = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', { code: 'P2002', clientVersion: 'x.y.z', meta: { target: ['sku'] } });
-      prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics', products: [] });
+      prismaMock.category.findUnique.mockResolvedValue({ id: mockCategoryId, name: 'Electronics' });
       prismaMock.product.create.mockRejectedValue(p2002Error);
+      
+      // Suppress console.error for this error test
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
       const request = new NextRequest('http://localhost', { method: 'POST', body: JSON.stringify(validProductData) });
 
       const response = await POST(request);
@@ -113,6 +137,10 @@ describe('API /products', () => {
 
       expect(response.status).toBe(409);
       expect(body.error).toBe('A product with the same SKU already exists.');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+      // Restore console.error
+      consoleSpy.mockRestore();
     });
   });
 });

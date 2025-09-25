@@ -127,6 +127,9 @@ describe('API /auth/login', () => {
     // Arrange
     prismaMock.admin.findUnique.mockRejectedValue(new Error('DB Error'));
 
+    // Suppress console.error for this error test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     const requestBody = { email: 'admin@test.com', password: 'password123' };
     const request = new NextRequest('http://localhost/api/auth/login', {
       method: 'POST',
@@ -140,5 +143,9 @@ describe('API /auth/login', () => {
     // Assert
     expect(response.status).toBe(500);
     expect(body.error).toBe('Failed to login');
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+    // Restore console.error
+    consoleSpy.mockRestore();
   });
 });

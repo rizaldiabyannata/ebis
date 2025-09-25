@@ -102,6 +102,9 @@ describe('API /auth/me', () => {
     mockedVerifyToken.mockResolvedValue(mockJwtPayload);
     prismaMock.admin.findUnique.mockRejectedValue(new Error('DB Error'));
 
+    // Suppress console.error for this error test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     // Act
     const response = await GET();
     const body = await response.json();
@@ -109,5 +112,9 @@ describe('API /auth/me', () => {
     // Assert
     expect(response.status).toBe(500);
     expect(body.error).toBe('Failed to fetch current user');
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+    // Restore console.error
+    consoleSpy.mockRestore();
   });
 });

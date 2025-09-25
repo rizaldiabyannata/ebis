@@ -9,8 +9,8 @@ import { randomUUID } from 'crypto';
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
 describe('API /orders', () => {
-  const mockVariant1 = { id: randomUUID(), sku: 'V1', price: new Decimal(10), stock: 10, productId: randomUUID() };
-  const mockVariant2 = { id: randomUUID(), sku: 'V2', price: new Decimal(20), stock: 5, productId: randomUUID() };
+  const mockVariant1 = { id: randomUUID(), name: 'Variant 1', sku: 'V1', price: new Decimal(10), stock: 10, productId: randomUUID() };
+  const mockVariant2 = { id: randomUUID(), name: 'Variant 2', sku: 'V2', price: new Decimal(20), stock: 5, productId: randomUUID() };
   const mockVoucher = { id: randomUUID(), code: 'SUMMER', discountType: 'FIXED_AMOUNT' as DiscountType, discountValue: new Decimal(5), validUntil: new Date(Date.now() + 86400000), stock: 10 };
 
   beforeEach(() => {
@@ -61,7 +61,7 @@ describe('API /orders', () => {
       prismaMock.voucher.findUnique.mockResolvedValue(mockVoucher);
       // When `order.create` is called inside the transaction, return our JSON-safe mock object
       prismaMock.order.create.mockResolvedValue(mockCreatedOrder as any);
-      prismaMock.$transaction.mockImplementation(async (cb) => cb(prismaMock));
+  prismaMock.$transaction.mockImplementation(async (cb: any) => cb(prismaMock));
 
       const request = new NextRequest('http://localhost', { method: 'POST', body: JSON.stringify(validOrderData) });
       const response = await POST(request);
@@ -116,11 +116,19 @@ describe('API /orders', () => {
         prismaMock.productVariant.findMany.mockResolvedValue([mockVariant1, mockVariant2]);
         prismaMock.voucher.findUnique.mockResolvedValue(mockVoucher);
         prismaMock.$transaction.mockRejectedValue(new Error('Transaction failed'));
+        
+        // Suppress console.error for this error test
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        
         const request = new NextRequest('http://localhost', { method: 'POST', body: JSON.stringify(validOrderData) });
         const response = await POST(request);
         const body = await response.json();
         expect(response.status).toBe(500);
         expect(body.error).toBe('Failed to create order');
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to create order:'), expect.any(Error));
+
+        // Restore console.error
+        consoleSpy.mockRestore();
     });
   });
 });

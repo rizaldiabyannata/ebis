@@ -44,10 +44,18 @@ describe('API /vouchers', () => {
 
     it('should return 500 if the database call fails', async () => {
       prismaMock.voucher.findMany.mockRejectedValue(new Error('DB Error'));
+      
+      // Suppress console.error for this error test
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
       const response = await GET();
       const body = await response.json();
       expect(response.status).toBe(500);
       expect(body.error).toBe('Failed to fetch vouchers');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+      // Restore console.error
+      consoleSpy.mockRestore();
     });
   });
 

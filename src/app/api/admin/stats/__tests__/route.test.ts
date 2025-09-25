@@ -39,6 +39,7 @@ describe('API /admin/stats', () => {
 
   it('should return 500 if any database call fails', async () => {
     // Arrange
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     prismaMock.product.count.mockRejectedValue(new Error('DB Error'));
     prismaMock.category.count.mockResolvedValue(5);
     // ... other mocks don't matter as Promise.all will reject
@@ -50,5 +51,9 @@ describe('API /admin/stats', () => {
     // Assert
     expect(response.status).toBe(500);
     expect(body.error).toBe('Failed to fetch stats');
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    
+    // Cleanup
+    consoleSpy.mockRestore();
   });
 });

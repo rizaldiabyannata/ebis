@@ -34,6 +34,9 @@ describe('API /categories', () => {
       // Arrange
       prismaMock.category.findMany.mockRejectedValue(new Error('DB Error'));
 
+      // Suppress console.error for this error test
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
       // Act
       const response = await GET();
       const body = await response.json();
@@ -41,6 +44,10 @@ describe('API /categories', () => {
       // Assert
       expect(response.status).toBe(500);
       expect(body.error).toBe('Failed to fetch categories');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+      // Restore console.error
+      consoleSpy.mockRestore();
     });
   });
 
@@ -108,6 +115,9 @@ describe('API /categories', () => {
         prismaMock.category.findFirst.mockResolvedValue(null);
         prismaMock.category.create.mockRejectedValue(new Error('DB Error'));
 
+        // Suppress console.error for this error test
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
         const requestBody = { name: 'Apparel' };
         const request = new NextRequest('http://localhost/api/categories', {
           method: 'POST',
@@ -121,6 +131,10 @@ describe('API /categories', () => {
         // Assert
         expect(response.status).toBe(500);
         expect(body.error).toBe('Failed to create category');
-      });
+        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+
+        // Restore console.error
+        consoleSpy.mockRestore();
+    });
   });
 });

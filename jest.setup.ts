@@ -20,5 +20,5 @@ beforeEach(() => {
 });
 
 // Polyfills for features that may not be available in the JSDOM/Node environment
-global.TextEncoder = TextEncoder;
+global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
