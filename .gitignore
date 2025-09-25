@@ -25,6 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local .env files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -33,3 +34,5 @@ yarn-error.log*
 # SQLite databases
 *.db
 *.db-journal
+
+/public/uploads/
