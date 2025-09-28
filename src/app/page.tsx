@@ -8,8 +8,8 @@ export default function Home() {
 	return (
 		<div className="min-h-screen flex flex-col bg-background text-foreground">
 			{/* Navbar */}
-			<header className="border-b bg-white/80 dark:bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-40">
-				<div className="container mx-auto flex items-center justify-between py-4 px-4">
+			<header className="sticky top-0 z-50 border-b bg-white md:bg-white/80 dark:bg-background md:dark:bg-background/60 md:backdrop-blur md:supports-[backdrop-filter]:bg-white/60">
+				<div className="container relative mx-auto flex items-center justify-between py-4 px-4">
 					<div className="flex items-center gap-2">
 						<Image src="/logo.png" alt="HepiBite" width={28} height={28} />
 						<span className="text-xl font-extrabold tracking-tight">
@@ -47,11 +47,22 @@ export default function Home() {
 						<Button className="hidden sm:inline-flex" asChild>
 							<Link href="/register">Sign Up</Link>
 						</Button>
-						<Button size="icon" className="md:hidden" aria-label="Open menu">
+						{/* Mobile hamburger */}
+						<button
+							className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border bg-white text-foreground shadow"
+							aria-label="Open menu"
+							aria-expanded={false}
+							onClick={(e) => {
+								e.stopPropagation();
+								const el = document.getElementById("mobile-menu-home");
+								if (el) {
+									el.classList.toggle("hidden");
+								}
+							}}
+						>
 							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
+								width="22"
+								height="22"
 								viewBox="0 0 24 24"
 								fill="none"
 								stroke="currentColor"
@@ -59,11 +70,85 @@ export default function Home() {
 								strokeLinecap="round"
 								strokeLinejoin="round"
 							>
-								<line x1="3" x2="21" y1="6" y2="6" />
-								<line x1="3" x2="21" y1="12" y2="12" />
-								<line x1="3" x2="21" y1="18" y2="18" />
+								<line x1="3" y1="6" x2="21" y2="6"></line>
+								<line x1="3" y1="12" x2="21" y2="12"></line>
+								<line x1="3" y1="18" x2="21" y2="18"></line>
 							</svg>
-						</Button>
+						</button>
+					</div>
+
+					{/* Mobile dropdown menu */}
+					<div
+						id="mobile-menu-home"
+						className="hidden md:hidden absolute right-4 top-full mt-2 w-56 rounded-lg border bg-white p-2 shadow-lg z-50"
+					>
+						<Link
+							href="#"
+							className="block rounded px-3 py-2 text-sm hover:bg-muted"
+							onClick={() => {
+								document
+									.getElementById("mobile-menu-home")
+									?.classList.add("hidden");
+							}}
+						>
+							Home
+						</Link>
+						<Link
+							href="#vendors"
+							className="block rounded px-3 py-2 text-sm hover:bg-muted"
+							onClick={() => {
+								document
+									.getElementById("mobile-menu-home")
+									?.classList.add("hidden");
+							}}
+						>
+							Vendors
+						</Link>
+						<Link
+							href="#partners"
+							className="block rounded px-3 py-2 text-sm hover:bg-muted"
+							onClick={() => {
+								document
+									.getElementById("mobile-menu-home")
+									?.classList.add("hidden");
+							}}
+						>
+							Partners
+						</Link>
+						<Link
+							href="#about"
+							className="block rounded px-3 py-2 text-sm hover:bg-muted"
+							onClick={() => {
+								document
+									.getElementById("mobile-menu-home")
+									?.classList.add("hidden");
+							}}
+						>
+							About Us
+						</Link>
+						<div className="my-1 h-px bg-border" />
+						<Link
+							href="/login"
+							className="block rounded px-3 py-2 text-sm hover:bg-muted"
+							onClick={() => {
+								document
+									.getElementById("mobile-menu-home")
+									?.classList.add("hidden");
+							}}
+						>
+							Login
+						</Link>
+						<Link
+							href="/register"
+							className="block rounded px-3 py-2 text-sm hover:bg-muted"
+							onClick={() => {
+								document
+									.getElementById("mobile-menu-home")
+									?.classList.add("hidden");
+							}}
+						>
+							Sign Up
+						</Link>
 					</div>
 				</div>
 			</header>
