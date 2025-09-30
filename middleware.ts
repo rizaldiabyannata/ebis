@@ -12,18 +12,35 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const method = req.method.toUpperCase();
 
-  // Always allow auth endpoints
-  if (pathname.startsWith('/api/auth')) {
-    return NextResponse.next();
+  const isApi = pathname.startsWith('/api/');
+  const isAuthApi = pathname.startsWith('/api/auth');
+  const isAdminPage = pathname.startsWith('/admin');
+  const isLoginPage = pathname === '/login';
+
+  // Always allow auth API endpoints without checks
+  if (isAuthApi) return NextResponse.next();
+
+  // Read token once (applies to both API + page checks)
+  const token = req.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const payload = token ? await verifyToken(token) : null;
+
+  // If hitting login page while authenticated -> redirect to dashboard
+  if (isLoginPage && payload) {
+    return NextResponse.redirect(new URL('/admin/dashboard', req.url));
   }
 
-  // Only consider API paths
-  if (!pathname.startsWith('/api/')) {
-    return NextResponse.next();
+  // Protect admin pages (SSR / RSC) - redirect to /login if not authenticated
+  if (isAdminPage && !payload) {
+    const url = new URL('/login', req.url);
+    url.searchParams.set('next', pathname); // preserve intended destination
+    return NextResponse.redirect(url);
   }
 
-  // Decide if this request should be protected
-  const protect =
+  // Non-API paths (other pages) -> allow
+  if (!isApi) return NextResponse.next();
+
+  // Decide if this API request should be protected
+  const protectApi =
     pathname.startsWith('/api/admin/') ||
     pathname.startsWith('/api/admins') ||
     pathname.startsWith('/api/categories') ||
@@ -32,17 +49,10 @@ export async function middleware(req: NextRequest) {
     (pathname.startsWith('/api/products') && method !== 'GET') ||
     pathname.startsWith('/api/orders');
 
-  if (!protect) {
-    return NextResponse.next();
-  }
+  if (!protectApi) return NextResponse.next();
 
-  const token = req.cookies.get(AUTH_COOKIE_NAME)?.value;
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const payload = await verifyToken(token);
   if (!payload) {
+    // Return JSON for API unauthorized
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -50,5 +60,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/api/:path*', '/admin/:path*', '/login'],
 };
