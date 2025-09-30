@@ -29,6 +29,22 @@ import {
 } from "@/lib/validation";
 import { toast } from "sonner";
 
+// --- Currency & numeric helpers ---
+const formatRupiah = (value: number) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(Number.isFinite(value) ? value : 0);
+
+function parseRupiahInput(raw: string): number {
+  // Remove anything except digits
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (!digits) return 0;
+  // Convert to number (no decimal for IDR)
+  return Number(digits);
+}
+
 type Category = { id: string; name: string };
 
 export function CreateProductForm({
@@ -276,22 +292,29 @@ export function CreateProductForm({
                 <FormField
                   control={form.control}
                   name={`variants.${index}.price` as const}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const display = formatRupiah(field.value || 0);
+                    return (
+                      <FormItem>
+                        <FormLabel>Price (Rp)</FormLabel>
+                        <FormControl>
+                          <Input
+                            inputMode="numeric"
+                            value={display}
+                            onChange={(e) => {
+                              const num = parseRupiahInput(e.target.value);
+                              field.onChange(num);
+                            }}
+                            onBlur={(e) => {
+                              // Ensure value is normalized (e.g., empty -> 0)
+                              if (!field.value) field.onChange(0);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <FormField
                   control={form.control}
@@ -301,11 +324,21 @@ export function CreateProductForm({
                       <FormLabel>Stock</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          inputMode="numeric"
+                          value={field.value ?? 0}
+                          onChange={(e) => {
+                            // Remove non-digits
+                            let raw = e.target.value.replace(/[^0-9]/g, "");
+                            // Strip leading zeros (but allow single 0)
+                            raw = raw.replace(/^0+(\d)/, "$1");
+                            if (raw === "") raw = "0";
+                            const num = Number(raw);
+                            field.onChange(num);
+                          }}
+                          onBlur={() => {
+                            if (field.value == null || isNaN(field.value))
+                              field.onChange(0);
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
