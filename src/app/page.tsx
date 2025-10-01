@@ -194,7 +194,7 @@ export default function Home() {
 				<p className="text-muted-foreground max-w-3xl">
 					Kelompok kami membangun platform e‑commerce "HepiBite" yang menjual
 					produk berupa makanan (snack). HepiBite tidak sekadar platform,
-					melainkan wadah yang menghadirkan variasi patrais pedagang makanan
+					melainkan wadah yang menghadirkan variasi berbagai pedagang makanan
 					ringan yang telah menjadi mitra kami.
 				</p>
 			</section>
