@@ -131,7 +131,7 @@ export default function EcommercePage() {
 					{/* Mobile dropdown menu */}
 					<div
 						id="mobile-menu-ec"
-						className="hidden md:hidden absolute right-4 top-full mt-2 w-56 rounded-lg border bg-white p-2 shadow-lg"
+						className="hidden absolute right-4 top-full mt-2 w-56 rounded-lg border bg-white p-2 shadow-lg"
 					>
 						<Link
 							href="/"
