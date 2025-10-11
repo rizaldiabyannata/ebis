@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -20,6 +20,7 @@ export default function EcommercePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [productIndex, setProductIndex] = useState(0);
     const [variantIndex, setVariantIndex] = useState(0);
+    const [direction, setDirection] = useState(0); // 0 = no move, 1 = next, -1 = prev
 
     // Fetch data from API
     useEffect(() => {
@@ -29,7 +30,6 @@ export default function EcommercePage() {
                 if (!response.ok) throw new Error("Gagal mengambil data produk");
                 const data: ProductWithRelations[] = await response.json();
                 
-                // Filter produk yang memiliki varian dan gambar
                 const validProducts = data.filter(p => p.variants.length > 0 && p.images.length > 0);
                 setProducts(validProducts);
 
@@ -49,8 +49,7 @@ export default function EcommercePage() {
 
     const currentVariant = useMemo(() => {
         if (!currentProduct) return null;
-        // Prioritaskan gambar varian jika ada, jika tidak pakai gambar utama produk
-        const variantImage = currentProduct.images.find(img => img.id === currentProduct.variants[variantIndex]?.id); // asumsi relasi id
+        const variantImage = currentProduct.images.find(img => img.id === currentProduct.variants[variantIndex]?.id);
         const mainImage = currentProduct.images.find(img => img.isMain) || currentProduct.images[0];
         
         return {
@@ -59,22 +58,21 @@ export default function EcommercePage() {
         };
     }, [currentProduct, variantIndex]);
 
+    const navigateProduct = (newDirection: number) => {
+        setDirection(newDirection);
+        const newIndex = (productIndex + newDirection + products.length) % products.length;
+        setProductIndex(newIndex);
+        setVariantIndex(0);
+    };
 
-    const prevProduct = () => {
-        setProductIndex((prev) => (prev - 1 + products.length) % products.length);
-        setVariantIndex(0);
-    };
-    const nextProduct = () => {
-        setProductIndex((prev) => (prev + 1) % products.length);
-        setVariantIndex(0);
-    };
-    const prevVariant = () => {
-        if (!currentProduct) return;
-        setVariantIndex((prev) => (prev - 1 + currentProduct.variants.length) % currentProduct.variants.length);
-    };
     const nextVariant = () => {
         if (!currentProduct) return;
         setVariantIndex((prev) => (prev + 1) % currentProduct.variants.length);
+    };
+
+    const prevVariant = () => {
+        if (!currentProduct) return;
+        setVariantIndex((prev) => (prev - 1 + currentProduct.variants.length) % currentProduct.variants.length);
     };
 
     if (isLoading) {
@@ -83,106 +81,150 @@ export default function EcommercePage() {
     
     if (!currentProduct || !currentVariant) {
          return (
-            <div className="flex h-screen flex-col items-center justify-center bg-gray-50 text-center">
-                <h2 className="text-2xl font-semibold">Gagal Memuat Produk</h2>
+            <div className="flex h-screen flex-col items-center justify-center bg-gray-50 text-center dark:bg-neutral-900">
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Gagal Memuat Produk</h2>
                 <p className="text-muted-foreground mt-2">
-                    Tidak ada produk yang tersedia saat ini atau terjadi kesalahan.
+                    Tidak ada produk yang tersedia atau terjadi kesalahan.
                 </p>
-                 <Button asChild className="mt-4">
-                    <Link href="/">Kembali ke Home</Link>
+                 <Button asChild className="mt-6 bg-amber-500 hover:bg-amber-600 text-white">
+                    <Link href="/">Kembali ke Beranda</Link>
                 </Button>
             </div>
         );
     }
+    
+    const productVariants = {
+        enter: (direction: number) => ({
+            x: direction > 0 ? 1000 : -1000,
+            opacity: 0,
+        }),
+        center: {
+            zIndex: 1,
+            x: 0,
+            opacity: 1,
+        },
+        exit: (direction: number) => ({
+            zIndex: 0,
+            x: direction < 0 ? 1000 : -1000,
+            opacity: 0,
+        }),
+    };
 
     return (
-        <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 text-foreground overflow-hidden">
+        <div className="relative min-h-screen w-full bg-stone-100 dark:bg-neutral-950 text-stone-800 dark:text-stone-200 overflow-hidden flex flex-col">
+            {/* Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-amber-400/30 dark:bg-amber-500/20 rounded-full blur-3xl opacity-40 animate-pulse" />
+
             {/* Navbar */}
-            <header className="sticky top-0 z-50 border-b bg-white/70 dark:bg-black/50 backdrop-blur-xl">
+            <header className="sticky top-0 z-50 w-full border-b border-black/5 dark:border-white/5 bg-white/30 dark:bg-black/30 backdrop-blur-xl">
                  <div className="container mx-auto flex items-center justify-between p-4">
                     <Link href="/" className="flex items-center gap-2">
                         <Image src="/logo.png" alt="HepiBite" width={32} height={32} className="rounded-md" />
                         <span className="text-xl font-bold tracking-tighter">
-                            <span className="text-[#F4A825]">Hepi</span><span className="text-[#7A4B2E]">Bite</span>
+                            <span className="text-amber-500">Hepi</span><span className="text-stone-700 dark:text-stone-300">Bite</span>
                         </span>
                     </Link>
-                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                         <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>
-                         <Link href="/e-commerce" className="font-semibold text-primary">E-commerce</Link>
+                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600 dark:text-stone-400">
+                         <Link href="/" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Home</Link>
+                         <Link href="/e-commerce" className="font-semibold text-amber-500">E-commerce</Link>
                     </nav>
-                     <Button variant="ghost" asChild>
+                     <Button variant="ghost" className="text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-neutral-800" asChild>
                         <Link href="/login">Login</Link>
                     </Button>
                 </div>
             </header>
 
             {/* Main Content */}
-            <main className="flex-grow flex items-center justify-center">
-                <div className="container relative mx-auto flex items-center justify-center px-4 py-10">
+            <main className="flex-grow flex items-center justify-center p-4">
+                <div className="relative w-full max-w-6xl h-full flex items-center justify-center">
                     
-                    {/* Main Product Display */}
-                    <div className="relative grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-16 max-w-5xl w-full">
-                        
-                        {/* Left Side: Image Viewer */}
-                        <div className="relative flex items-center justify-center h-[400px] sm:h-[500px]">
-                           <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentVariant.id}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    className="absolute inset-0 flex items-center justify-center"
-                                >
-                                    <div className="relative aspect-square w-full max-w-[400px] rounded-full bg-gradient-to-br from-amber-100 to-yellow-200 p-2 shadow-2xl shadow-amber-900/10">
-                                        <Image
-                                            src={currentVariant.imageUrl || "/logo.png"}
-                                            alt={`${currentProduct.name} - ${currentVariant.name}`}
-                                            fill
-                                            sizes="(max-width: 768px) 90vw, 400px"
-                                            className="object-contain rounded-full bg-white"
-                                            priority
-                                        />
+                    {/* Product Navigation */}
+                    <ArrowButton direction="left" onClick={() => navigateProduct(-1)} className="absolute left-0 md:-left-8 z-20" />
+                    <ArrowButton direction="right" onClick={() => navigateProduct(1)} className="absolute right-0 md:-right-8 z-20" />
+                    
+                    {/* Product Card */}
+                    <AnimatePresence initial={false} custom={direction} mode="wait">
+                        <motion.div
+                            key={productIndex}
+                            custom={direction}
+                            variants={productVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{
+                                x: { type: "spring", stiffness: 300, damping: 30 },
+                                opacity: { duration: 0.2 },
+                            }}
+                            className="w-full max-w-md lg:max-w-4xl"
+                        >
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                                {/* Image Viewer */}
+                                <div className="relative w-full aspect-square flex items-center justify-center">
+                                    <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={currentVariant.id}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.8 }}
+                                            transition={{ duration: 0.3, ease: "backOut" }}
+                                            className="w-full h-full"
+                                        >
+                                            <Image
+                                                src={currentVariant.imageUrl || "/logo.png"}
+                                                alt={`${currentProduct.name} - ${currentVariant.name}`}
+                                                fill
+                                                sizes="(max-width: 1024px) 80vw, 40vw"
+                                                className="object-cover drop-shadow-2xl rounded-full"
+                                                priority
+                                            />
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+                                
+                                {/* Product Details */}
+                                <div className="flex flex-col text-center lg:text-left items-center lg:items-start">
+                                    <motion.h1 
+                                        key={`title-${productIndex}`}
+                                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.4 }}
+                                        className="text-4xl md:text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-stone-800 to-stone-600 dark:from-stone-100 dark:to-stone-300"
+                                    >
+                                        {currentProduct.name}
+                                    </motion.h1>
+                                    
+                                    <div className="mt-4 flex items-center gap-3">
+                                        <motion.p 
+                                            key={`variant-${currentVariant.id}`}
+                                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+                                            className="text-xl font-semibold text-amber-600 dark:text-amber-400"
+                                        >
+                                            {currentVariant.name}
+                                        </motion.p>
+                                        <div className="flex flex-col gap-1">
+                                            <VariantButton direction="up" onClick={nextVariant} />
+                                            <VariantButton direction="down" onClick={prevVariant} />
+                                        </div>
                                     </div>
-                                </motion.div>
-                            </AnimatePresence>
-
-                            {/* Variant Controls */}
-                             <ArrowButton direction="up" onClick={nextVariant} className="absolute top-0" />
-                             <ArrowButton direction="down" onClick={prevVariant} className="absolute bottom-0" />
-                        </div>
-
-                        {/* Right Side: Product Details */}
-                        <div className="relative flex flex-col items-center md:items-start text-center md:text-left">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentProduct.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.4, ease: "circOut" }}
-                                    className="w-full"
-                                >
-                                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tighter text-stone-800 dark:text-stone-100">{currentProduct.name}</h1>
-                                    <p className="mt-2 text-lg text-amber-600 dark:text-amber-400 font-semibold">{currentVariant.name}</p>
-                                    <p className="mt-4 text-base text-muted-foreground max-w-sm">
+                                    
+                                    <motion.p 
+                                        key={`desc-${productIndex}`}
+                                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
+                                        className="mt-4 text-base text-stone-600 dark:text-stone-400 max-w-sm"
+                                    >
                                         {currentProduct.description}
-                                    </p>
-                                </motion.div>
-                            </AnimatePresence>
-                            
-                            <Button size="lg" className="mt-8 rounded-full px-8 py-6 text-base font-bold bg-[#7A4B2E] hover:bg-[#5f3a22] text-white shadow-lg shadow-amber-900/20" asChild>
-                                <Link href="/e-commerce/pemesanan">
-                                    <ShoppingCart className="mr-2 h-5 w-5"/>
-                                    Pesan Sekarang
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
-                    
-                    {/* Product Controls */}
-                    <ArrowButton direction="left" onClick={prevProduct} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2" />
-                    <ArrowButton direction="right" onClick={nextProduct} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" />
+                                    </motion.p>
+                                    
+                                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.4 }}>
+                                        <Button size="lg" className="mt-8 rounded-full px-8 py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105" asChild>
+                                            <Link href="/e-commerce/pemesanan">
+                                                <ShoppingCart className="mr-2 h-5 w-5"/>
+                                                Pesan Sekarang
+                                            </Link>
+                                        </Button>
+                                    </motion.div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </main>
         </div>
@@ -190,19 +232,33 @@ export default function EcommercePage() {
 }
 
 // Arrow Button Component
-function ArrowButton({ direction, onClick, className = "" }: { direction: "left" | "right" | "up" | "down"; onClick?: () => void; className?: string; }) {
+function ArrowButton({ direction, onClick, className = "" }: { direction: "left" | "right"; onClick?: () => void; className?: string; }) {
     const icons = {
-        left: <ChevronLeft className="h-6 w-6" />,
-        right: <ChevronRight className="h-6 w-6" />,
-        up: <ChevronUp className="h-6 w-6" />,
-        down: <ChevronDown className="h-6 w-6" />,
+        left: <ChevronLeft className="h-7 w-7" />,
+        right: <ChevronRight className="h-7 w-7" />,
     };
-
     return (
         <button
             onClick={onClick}
             aria-label={`Arrow ${direction}`}
-            className={`z-10 flex items-center justify-center size-12 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-black/10 dark:border-white/10 text-stone-600 dark:text-stone-300 hover:bg-white/80 dark:hover:bg-black/80 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-500 ${className}`}
+            className={`flex items-center justify-center size-14 rounded-full bg-white/60 dark:bg-black/50 backdrop-blur-md border border-black/10 dark:border-white/10 text-stone-700 dark:text-stone-300 hover:bg-white/90 dark:hover:bg-black/70 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-500 ${className}`}
+        >
+            {icons[direction]}
+        </button>
+    );
+}
+
+// Variant Arrow Button
+function VariantButton({ direction, onClick }: { direction: "up" | "down"; onClick?: () => void; }) {
+    const icons = {
+        up: <ArrowUp className="h-4 w-4" />,
+        down: <ArrowDown className="h-4 w-4" />,
+    };
+    return (
+        <button
+            onClick={onClick}
+            aria-label={`Arrow ${direction}`}
+            className="flex items-center justify-center size-5 rounded-md bg-stone-200 dark:bg-neutral-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-neutral-600 transition-colors"
         >
             {icons[direction]}
         </button>
@@ -212,26 +268,26 @@ function ArrowButton({ direction, onClick, className = "" }: { direction: "left"
 // Loading Skeleton Component
 function LoadingSkeleton() {
     return (
-        <div className="min-h-screen flex flex-col bg-stone-50">
-            <header className="sticky top-0 z-50 border-b bg-white/70 backdrop-blur-xl">
+        <div className="min-h-screen flex flex-col bg-stone-100 dark:bg-neutral-950">
+            <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/5 bg-white/30 dark:bg-black/30 backdrop-blur-xl">
                  <div className="container mx-auto flex items-center justify-between p-4">
-                     <Skeleton className="h-8 w-32" />
-                     <Skeleton className="h-8 w-24" />
+                     <Skeleton className="h-8 w-32 rounded-md" />
+                     <div className="hidden md:flex items-center gap-6">
+                        <Skeleton className="h-6 w-16 rounded-md" />
+                        <Skeleton className="h-6 w-24 rounded-md" />
+                     </div>
+                     <Skeleton className="h-9 w-20 rounded-md" />
                 </div>
             </header>
-             <main className="flex-grow flex items-center justify-center">
-                <div className="container relative mx-auto flex items-center justify-center px-4 py-10">
-                    <div className="relative grid grid-cols-1 md:grid-cols-2 items-center gap-16 max-w-5xl w-full">
-                        <div className="relative flex items-center justify-center h-[500px]">
-                           <Skeleton className="aspect-square w-full max-w-[400px] rounded-full" />
-                        </div>
-                        <div className="flex flex-col items-center md:items-start">
-                            <Skeleton className="h-12 w-64" />
-                            <Skeleton className="h-6 w-32 mt-4" />
-                            <Skeleton className="h-4 w-full mt-6" />
-                            <Skeleton className="h-4 w-4/5 mt-2" />
-                            <Skeleton className="h-14 w-48 mt-8 rounded-full" />
-                        </div>
+             <main className="flex-grow flex items-center justify-center p-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-4xl w-full">
+                    <Skeleton className="w-full aspect-square rounded-full" />
+                    <div className="flex flex-col items-center lg:items-start gap-4">
+                        <Skeleton className="h-12 w-3/4" />
+                        <Skeleton className="h-8 w-1/2" />
+                        <Skeleton className="h-5 w-full mt-2" />
+                        <Skeleton className="h-5 w-4/5" />
+                        <Skeleton className="h-14 w-48 mt-6 rounded-full" />
                     </div>
                 </div>
             </main>

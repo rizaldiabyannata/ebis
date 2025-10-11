@@ -1,234 +1,126 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import prisma from "@/lib/prisma";
+import { ArrowRight, ShoppingBag } from "lucide-react";
+import SiteHeader from "@/components/SiteHeader";
+// The page is a server component, allowing for direct data fetching.
+export default async function Home() {
+	// Fetch featured products from the database.
+	const products = await prisma.product.findMany({
+		take: 4,
+		include: {
+			images: {
+				where: { isMain: true },
+				take: 1,
+			},
+		},
+		orderBy: {
+			name: "asc",
+		},
+	});
 
-export default function Home() {
 	return (
-		<div className="min-h-screen flex flex-col bg-background text-foreground">
-			{/* Navbar */}
-			<header className="sticky top-0 z-50 border-b bg-white md:bg-white/80 dark:bg-background md:dark:bg-background/60 md:backdrop-blur md:supports-[backdrop-filter]:bg-white/60">
-				<div className="container relative mx-auto flex items-center justify-between py-4 px-4">
-					<div className="flex items-center gap-2">
-						<Image src="/logo.png" alt="HepiBite" width={28} height={28} />
-						<span className="text-xl font-extrabold tracking-tight">
-							<span className="text-[#F4A825]">Hepi</span>
-							<span className="ml-[2px] text-[#7A4B2E]">Bite</span>
-						</span>
-					</div>
-					<nav className="hidden md:flex items-center gap-6 text-sm">
-						<Link href="#" className="font-medium text-primary">
-							Home
-						</Link>
-						<Link
-							href="#vendors"
-							className="text-muted-foreground hover:text-foreground"
-						>
-							Vendors
-						</Link>
-						<Link
-							href="#partners"
-							className="text-muted-foreground hover:text-foreground"
-						>
-							Partners
-						</Link>
-						<Link
-							href="#about"
-							className="text-muted-foreground hover:text-foreground"
-						>
-							About Us
-						</Link>
-					</nav>
-					<div className="flex items-center gap-2">
-						<Button variant="ghost" className="hidden sm:inline-flex" asChild>
-							<Link href="/login">Login</Link>
-						</Button>
-						<Button className="hidden sm:inline-flex" asChild>
-							<Link href="/register">Sign Up</Link>
-						</Button>
-						{/* Mobile hamburger */}
-						<button
-							className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border bg-white text-foreground shadow"
-							aria-label="Open menu"
-							aria-expanded={false}
-							onClick={(e) => {
-								e.stopPropagation();
-								const el = document.getElementById("mobile-menu-home");
-								if (el) {
-									el.classList.toggle("hidden");
-								}
-							}}
-						>
-							<svg
-								width="22"
-								height="22"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<line x1="3" y1="6" x2="21" y2="6"></line>
-								<line x1="3" y1="12" x2="21" y2="12"></line>
-								<line x1="3" y1="18" x2="21" y2="18"></line>
-							</svg>
-						</button>
-					</div>
+		<div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 text-stone-800 dark:text-stone-200">
+			<SiteHeader />
 
-					{/* Mobile dropdown menu */}
-					<div
-						id="mobile-menu-home"
-						className="hidden md:hidden absolute right-4 top-full mt-2 w-56 rounded-lg border bg-white p-2 shadow-lg z-50"
-					>
-						<Link
-							href="#"
-							className="block rounded px-3 py-2 text-sm hover:bg-muted"
-							onClick={() => {
-								document
-									.getElementById("mobile-menu-home")
-									?.classList.add("hidden");
-							}}
-						>
-							Home
-						</Link>
-						<Link
-							href="#vendors"
-							className="block rounded px-3 py-2 text-sm hover:bg-muted"
-							onClick={() => {
-								document
-									.getElementById("mobile-menu-home")
-									?.classList.add("hidden");
-							}}
-						>
-							Vendors
-						</Link>
-						<Link
-							href="#partners"
-							className="block rounded px-3 py-2 text-sm hover:bg-muted"
-							onClick={() => {
-								document
-									.getElementById("mobile-menu-home")
-									?.classList.add("hidden");
-							}}
-						>
-							Partners
-						</Link>
-						<Link
-							href="#about"
-							className="block rounded px-3 py-2 text-sm hover:bg-muted"
-							onClick={() => {
-								document
-									.getElementById("mobile-menu-home")
-									?.classList.add("hidden");
-							}}
-						>
-							About Us
-						</Link>
-						<div className="my-1 h-px bg-border" />
-						<Link
-							href="/login"
-							className="block rounded px-3 py-2 text-sm hover:bg-muted"
-							onClick={() => {
-								document
-									.getElementById("mobile-menu-home")
-									?.classList.add("hidden");
-							}}
-						>
-							Login
-						</Link>
-						<Link
-							href="/register"
-							className="block rounded px-3 py-2 text-sm hover:bg-muted"
-							onClick={() => {
-								document
-									.getElementById("mobile-menu-home")
-									?.classList.add("hidden");
-							}}
-						>
-							Sign Up
-						</Link>
-					</div>
-				</div>
-			</header>
-
-			{/* Hero */}
-			<section className="relative isolate">
-				<div className="bg-[#f0ce95] dark:bg-[#F6C784]">
-					<div className="container mx-auto grid md:grid-cols-2 gap-8 px-4 py-12 md:py-16 items-center">
-						<div className="space-y-4">
-							<h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-								Platform E-commerce untuk Temukan Snack Favoritmu
+			<main>
+				{/* Hero Section */}
+				<section className="relative py-20 md:py-32 border-b border-black/5 dark:border-white/5">
+					<div className="absolute inset-0 bg-gradient-to-b from-amber-100/50 to-stone-50 dark:from-amber-900/10 dark:to-neutral-950 -z-10"></div>
+					<div className="container mx-auto grid md:grid-cols-2 gap-12 px-4 items-center">
+						<div className="space-y-5 text-center md:text-left">
+							<h1 className="text-4xl lg:text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-stone-800 to-stone-600 dark:from-stone-100 dark:to-stone-300">
+								Temukan Snack Favorit dan Unik Hanya di HepiBite
 							</h1>
-							<p className="text-muted-foreground max-w-prose">
-								Kami menghubungkan Anda dengan pedagang snack pilihan.
+							<p className="text-lg text-stone-600 dark:text-stone-400 max-w-prose mx-auto md:mx-0">
+								Jelajahi ribuan pilihan snack dari pedagang lokal terbaik. Kualitas terjamin, rasa tak terlupakan.
 							</p>
-							<div className="flex flex-wrap gap-3 pt-2">
-								<Button asChild>
-									<Link href="/e-commerce">Mulai Belanja</Link>
+							<div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
+								<Button size="lg" className="rounded-full px-8 py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105" asChild>
+									<Link href="/e-commerce">
+										<ShoppingBag className="mr-2 h-5 w-5"/>
+										Mulai Belanja
+									</Link>
 								</Button>
-								<Button variant="outline" asChild>
-									<Link href="#about">Pelajari Lebih Lanjut</Link>
+								<Button size="lg" variant="outline" className="rounded-full px-8 py-6 text-base font-bold border-stone-300 dark:border-neutral-700 hover:bg-stone-200/50 dark:hover:bg-neutral-800/50" asChild>
+									<Link href="#about">
+										Tentang Kami
+										<ArrowRight className="ml-2 h-5 w-5"/>
+									</Link>
 								</Button>
 							</div>
 						</div>
-						<div className="relative aspect-[4/3] w-full">
+						<div className="relative aspect-square w-full max-w-md mx-auto">
 							<Image
 								src="/Snack.png"
 								alt="Snack illustration"
 								fill
-								className="object-contain"
+								className="object-cover drop-shadow-2xl rounded-[30px]"
 								priority
 							/>
 						</div>
 					</div>
-				</div>
-			</section>
+				</section>
 
-			{/* About */}
-			<section id="about" className="container mx-auto px-4 py-12 md:py-16">
-				<h2 className="text-2xl md:text-3xl font-semibold mb-4">
-					Tentang Kami
-				</h2>
-				<p className="text-muted-foreground max-w-3xl">
-					Kelompok kami membangun platform e‑commerce "HepiBite" yang menjual
-					produk berupa makanan (snack). HepiBite tidak sekadar platform,
-					melainkan wadah yang menghadirkan variasi berbagai pedagang makanan
-					ringan yang telah menjadi mitra kami.
-				</p>
-			</section>
-
-			{/* Partners */}
-			<section id="partners" className="container mx-auto px-4 pb-10">
-				<h3 className="text-xl md:text-2xl font-semibold mb-6">Mitra Kami</h3>
-				<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-					{Array.from({ length: 10 }).map((_, i) => (
-						<div
-							key={i}
-							className="aspect-square rounded-full border bg-white/70 dark:bg-card flex items-center justify-center text-sm font-medium shadow-sm"
-						>
-							Logo {i + 1}
-						</div>
-					))}
-				</div>
-			</section>
-
-			{/* Contact */}
-			<footer className="mt-auto border-t">
-				<div className="container mx-auto px-4 py-8 grid md:grid-cols-2 gap-6 text-sm">
-					<div>
-						<h4 className="font-semibold mb-2">Hubungi Kami</h4>
-						<ul className="space-y-1 text-muted-foreground">
-							<li>@hepiHepi</li>
-							<li>hepi@bisnisten/retail.Hepi.com</li>
-						</ul>
+				{/* Featured Products Section */}
+				<section id="products" className="container mx-auto px-4 py-16 md:py-24">
+					<div className="max-w-2xl mx-auto text-center mb-12">
+						<h2 className="text-3xl md:text-4xl font-bold tracking-tight">Produk Unggulan Kami</h2>
+						<p className="mt-3 text-lg text-stone-600 dark:text-stone-400">Pilihan snack terbaik yang paling disukai pelanggan kami.</p>
 					</div>
-					<div className="md:text-right">
-						<h4 className="font-semibold mb-2">Hubungi Kami</h4>
-						<ul className="space-y-1 text-muted-foreground">
-							<li>+62 003 718 478 878</li>
-						</ul>
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+						{products.map((product) => (
+							<div key={product.id} className="group relative border bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+								<Link href={`/e-commerce`} className="absolute inset-0 z-10" aria-label={product.name}></Link>
+								<div className="relative aspect-square w-full">
+									<Image
+										src={product.images[0]?.imageUrl || "/logo.png"}
+										alt={product.name}
+										fill
+										className="object-cover transition-transform duration-300 group-hover:scale-105"
+									/>
+								</div>
+								<div className="p-5">
+									<h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">{product.name}</h3>
+									<p className="text-sm text-stone-500 dark:text-stone-400 mt-1 truncate">
+										{product.description}
+									</p>
+									<Button variant="outline" size="sm" className="mt-4 w-full relative z-20 border-stone-300 dark:border-neutral-700 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-colors">
+										Lihat Produk
+									</Button>
+								</div>
+							</div>
+						))}
+					</div>
+					<div className="text-center mt-12">
+						<Button size="lg" variant="outline" className="rounded-full px-8 border-stone-300 dark:border-neutral-700 hover:bg-stone-100 dark:hover:bg-neutral-800" asChild>
+							<Link href="/e-commerce">
+								Lihat Semua Produk
+								<ArrowRight className="ml-2 h-5 w-5"/>
+							</Link>
+						</Button>
+					</div>
+				</section>
+
+				{/* About Section */}
+				<section id="about" className="bg-stone-100 dark:bg-neutral-900/80 border-y border-black/5 dark:border-white/5">
+					<div className="container mx-auto px-4 py-16 md:py-24 text-center">
+						<h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Tentang HepiBite</h2>
+						<p className="text-lg text-stone-600 dark:text-stone-400 max-w-3xl mx-auto">
+							HepiBite adalah platform e-commerce yang menghubungkan para pecinta snack dengan pedagang makanan ringan terbaik. Kami percaya bahwa setiap gigitan harus membawa kebahagiaan.
+						</p>
+					</div>
+				</section>
+			</main>
+
+			{/* Footer */}
+			<footer className="mt-auto border-t border-black/5 dark:border-white/5">
+				<div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-stone-500 dark:text-stone-400">
+					<p>&copy; {new Date().getFullYear()} HepiBite. All rights reserved.</p>
+					<div className="flex items-center gap-4">
+						<Link href="#" className="hover:text-amber-500 transition-colors">Terms of Service</Link>
+						<Link href="#" className="hover:text-amber-500 transition-colors">Privacy Policy</Link>
 					</div>
 				</div>
 			</footer>
