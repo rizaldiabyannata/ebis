@@ -31,9 +31,9 @@ export async function GET() {
           include: {
             variant: {
               include: {
-                product: true
-              }
-            }
+                product: true,
+              },
+            },
           },
         },
         delivery: true,
@@ -44,7 +44,28 @@ export async function GET() {
         orderDate: 'desc',
       },
     });
-    return NextResponse.json(orders);
+
+    // Manually serialize Decimal fields
+    const serializedOrders = orders.map(order => ({
+      ...order,
+      subtotal: Number(order.subtotal),
+      totalDiscount: Number(order.totalDiscount),
+      totalFinal: Number(order.totalFinal),
+      orderDetails: order.orderDetails.map(detail => ({
+        ...detail,
+        priceAtOrder: Number(detail.priceAtOrder),
+      })),
+      delivery: order.delivery ? {
+        ...order.delivery,
+        deliveryFee: Number(order.delivery.deliveryFee),
+      } : null,
+      payments: order.payments.map(payment => ({
+        ...payment,
+        amount: Number(payment.amount),
+      })),
+    }));
+
+    return NextResponse.json(serializedOrders);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
