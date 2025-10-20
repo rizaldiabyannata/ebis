@@ -205,13 +205,12 @@ export default function EcommercePage() {
                                         </div>
                                     </div>
                                     
-                                    <motion.p 
+                                    <motion.div
                                         key={`desc-${productIndex}`}
                                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
-                                        className="mt-4 text-base text-stone-600 dark:text-stone-400 max-w-sm"
-                                    >
-                                        {currentProduct.description}
-                                    </motion.p>
+                                        className="prose prose-sm dark:prose-invert mt-4 text-stone-600 dark:text-stone-400 max-w-sm"
+                                        dangerouslySetInnerHTML={{ __html: currentProduct.description || "" }}
+                                    />
                                     
                                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.4 }}>
                                         <Button size="lg" className="mt-8 rounded-full px-8 py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105" asChild>
