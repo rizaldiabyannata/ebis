@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -63,16 +63,6 @@ export default function EcommercePage() {
         const newIndex = (productIndex + newDirection + products.length) % products.length;
         setProductIndex(newIndex);
         setVariantIndex(0);
-    };
-
-    const nextVariant = () => {
-        if (!currentProduct) return;
-        setVariantIndex((prev) => (prev + 1) % currentProduct.variants.length);
-    };
-
-    const prevVariant = () => {
-        if (!currentProduct) return;
-        setVariantIndex((prev) => (prev - 1 + currentProduct.variants.length) % currentProduct.variants.length);
     };
 
     if (isLoading) {
@@ -138,10 +128,6 @@ export default function EcommercePage() {
             <main className="flex-grow flex items-center justify-center p-4">
                 <div className="relative w-full max-w-6xl h-full flex items-center justify-center">
                     
-                    {/* Product Navigation */}
-                    <ArrowButton direction="left" onClick={() => navigateProduct(-1)} className="absolute left-0 md:-left-8 z-20" />
-                    <ArrowButton direction="right" onClick={() => navigateProduct(1)} className="absolute right-0 md:-right-8 z-20" />
-                    
                     {/* Product Card */}
                     <AnimatePresence initial={false} custom={direction} mode="wait">
                         <motion.div
@@ -174,7 +160,7 @@ export default function EcommercePage() {
                                                 alt={`${currentProduct.name} - ${currentVariant.name}`}
                                                 fill
                                                 sizes="(max-width: 1024px) 80vw, 40vw"
-                                                className="object-cover drop-shadow-2xl rounded-full"
+                                                className="object-cover drop-shadow-2xl rounded-2xl"
                                                 priority
                                             />
                                         </motion.div>
@@ -191,17 +177,24 @@ export default function EcommercePage() {
                                         {currentProduct.name}
                                     </motion.h1>
                                     
-                                    <div className="mt-4 flex items-center gap-3">
-                                        <motion.p 
-                                            key={`variant-${currentVariant.id}`}
-                                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-                                            className="text-xl font-semibold text-amber-600 dark:text-amber-400"
-                                        >
-                                            {currentVariant.name}
-                                        </motion.p>
-                                        <div className="flex flex-col gap-1">
-                                            <VariantButton direction="up" onClick={nextVariant} />
-                                            <VariantButton direction="down" onClick={prevVariant} />
+                                    <div className="mt-6 w-full">
+                                        <p className="text-sm font-medium text-stone-600 dark:text-stone-400 mb-3">Pilih Varian:</p>
+                                        <div className="flex flex-wrap gap-3">
+                                            {currentProduct.variants.map((variant, index) => (
+                                                <motion.button
+                                                    key={variant.id}
+                                                    onClick={() => setVariantIndex(index)}
+                                                    className={`px-4 py-2 text-sm font-semibold rounded-full border transition-all duration-200 shadow-sm ${
+                                                        variantIndex === index
+                                                            ? "bg-amber-500 border-amber-600 text-white shadow-lg shadow-amber-500/30"
+                                                            : "bg-white/50 dark:bg-black/50 border-stone-300 dark:border-neutral-700 hover:border-amber-400 dark:hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400"
+                                                    }`}
+                                                    whileHover={{ scale: 1.05, y: -2 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                >
+                                                    {variant.name}
+                                                </motion.button>
+                                            ))}
                                         </div>
                                     </div>
                                     
@@ -220,6 +213,12 @@ export default function EcommercePage() {
                                             </Link>
                                         </Button>
                                     </motion.div>
+
+                                    {/* Product Navigation */}
+                                    <div className="mt-8 flex items-center justify-center lg:justify-start gap-4">
+                                        <ArrowButton direction="left" onClick={() => navigateProduct(-1)} />
+                                        <ArrowButton direction="right" onClick={() => navigateProduct(1)} />
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
@@ -247,23 +246,6 @@ function ArrowButton({ direction, onClick, className = "" }: { direction: "left"
     );
 }
 
-// Variant Arrow Button
-function VariantButton({ direction, onClick }: { direction: "up" | "down"; onClick?: () => void; }) {
-    const icons = {
-        up: <ArrowUp className="h-4 w-4" />,
-        down: <ArrowDown className="h-4 w-4" />,
-    };
-    return (
-        <button
-            onClick={onClick}
-            aria-label={`Arrow ${direction}`}
-            className="flex items-center justify-center size-5 rounded-md bg-stone-200 dark:bg-neutral-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-neutral-600 transition-colors"
-        >
-            {icons[direction]}
-        </button>
-    );
-}
-
 // Loading Skeleton Component
 function LoadingSkeleton() {
     return (
@@ -280,7 +262,7 @@ function LoadingSkeleton() {
             </header>
              <main className="flex-grow flex items-center justify-center p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-4xl w-full">
-                    <Skeleton className="w-full aspect-square rounded-full" />
+                    <Skeleton className="w-full aspect-square rounded-2xl" />
                     <div className="flex flex-col items-center lg:items-start gap-4">
                         <Skeleton className="h-12 w-3/4" />
                         <Skeleton className="h-8 w-1/2" />
