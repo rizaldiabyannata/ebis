@@ -17,6 +17,7 @@ export default function SiteHeader() {
         { href: "/", label: "Home" },
         { href: "/#products", label: "Products" },
         { href: "/#about", label: "About Us" },
+        { href: "/e-commerce/orders", label: "Daftar Pesanan" },
     ];
 
     return (

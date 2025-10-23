@@ -75,6 +75,8 @@ export default function PemesananForm({ products }: PemesananFormProps) {
 			`items.${index}.variantId`,
 			selectedProduct?.variants[0]?.id ?? ""
 		);
+		// Trigger validation to re-render the dependent field
+		form.trigger(`items.${index}.variantId`);
 	};
 
 	async function onSubmit(values: OrderForm) {
@@ -227,9 +229,10 @@ export default function PemesananForm({ products }: PemesananFormProps) {
 											id={`items.${index}.productId`}
                                             className="h-10 w-full rounded-md border px-3 bg-background"
 											{...form.register(`items.${index}.productId`)}
-											onChange={(e) =>
-												handleProductChange(e.target.value, index)
-											}
+											onChange={(e) => {
+												form.register(`items.${index}.productId`).onChange(e); // Call original onChange
+												handleProductChange(e.target.value, index);
+											}}
                                         >
                                             {products.map((p) => (
 												<option key={p.id} value={p.id}>
