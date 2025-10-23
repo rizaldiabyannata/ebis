@@ -38,7 +38,7 @@ export default async function OrdersPage() {
                 <TableHead>Waktu Pemesanan</TableHead>
                 <TableHead>Status Pesanan</TableHead>
                 <TableHead>Status Pengiriman</TableHead>
-                <TableHead>Nama Penerima</TableHead>
+                <TableHead>Pengirim</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -61,7 +61,7 @@ export default async function OrdersPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {order.delivery ? order.delivery.recipientName : "N/A"}
+                    {order.delivery ? order.delivery.driverName : "N/A"}
                   </TableCell>
                 </TableRow>
               ))}
