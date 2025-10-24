@@ -129,10 +129,16 @@ export async function POST(request: Request) {
         description,
         categoryId,
         images: {
-          create: images,
+          create: images.map(({ imageUrl, isMain }) => ({ imageUrl, isMain })),
         },
         variants: {
-          create: variants,
+          create: variants.map(({ name, sku, price, stock, imageUrl }) => ({
+            name,
+            sku,
+            price,
+            stock,
+            imageUrl,
+          })),
         },
       },
       include: {

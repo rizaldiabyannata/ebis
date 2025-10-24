@@ -262,7 +262,11 @@ export function CreateProductForm({
           </CardHeader>
           <CardContent className="space-y-3">
             {variantFields.map((fieldItem, index) => (
-              <div key={fieldItem.id} className="grid gap-3 md:grid-cols-5">
+            <div
+                key={fieldItem.id}
+                className="grid gap-x-3 gap-y-4 md:grid-cols-5 rounded-lg border p-3"
+              >
+                {/* Variant Details */}
                 <FormField
                   control={form.control}
                   name={`variants.${index}.name` as const}
@@ -270,7 +274,7 @@ export function CreateProductForm({
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Variant name" {...field} />
+                        <Input placeholder="e.g. Red, Large" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -283,7 +287,7 @@ export function CreateProductForm({
                     <FormItem>
                       <FormLabel>SKU</FormLabel>
                       <FormControl>
-                        <Input placeholder="SKU" {...field} />
+                        <Input placeholder="SKU-RED-LG" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -354,6 +358,86 @@ export function CreateProductForm({
                   >
                     Remove
                   </Button>
+                </div>
+                {/* Variant Image Upload */}
+                <div className="md:col-span-5">
+                  <FormItem>
+                    <FormLabel>Variant Image (Optional)</FormLabel>
+                    <FormControl>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          const id = `variant-${fieldItem.id}`;
+                          const preview = URL.createObjectURL(file);
+                          setImageMeta((prev) => ({
+                            ...prev,
+                            [id]: {
+                              ...prev[id],
+                              fileName: file.name,
+                              preview,
+                              uploading: true,
+                            },
+                          }));
+
+                          const data = new FormData();
+                          data.append("file", file);
+
+                          try {
+                            const res = await fetch("/api/upload", {
+                              method: "POST",
+                              body: data,
+                            });
+                            if (!res.ok) throw new Error("Upload failed");
+
+                            const json = await res.json();
+                            form.setValue(
+                              `variants.${index}.imageUrl`,
+                              json.url,
+                              { shouldDirty: true, shouldValidate: true }
+                            );
+                             setImageMeta((prev) => ({
+                              ...prev,
+                              [id]: {
+                                ...prev[id],
+                                uploading: false,
+                                uploadedUrl: json.url
+                              },
+                            }));
+                            toast.success(`Variant image uploaded`);
+                          } catch (err) {
+                            setImageMeta((prev) => ({
+                              ...prev,
+                              [id]: { ...prev[id], uploading: false },
+                            }));
+                            toast.error(`Upload failed: ${err}`);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                     {imageMeta[`variant-${fieldItem.id}`]?.preview || form.watch(`variants.${index}.imageUrl`) ? (
+                      <div className="flex items-center gap-3 mt-2">
+                        <img
+                          src={
+                            imageMeta[`variant-${fieldItem.id}`]?.preview ||
+                            form.watch(`variants.${index}.imageUrl`)
+                          }
+                          alt="Variant preview"
+                          className="h-12 w-12 rounded object-cover border"
+                        />
+                         <div className="text-xs text-muted-foreground">
+                          {imageMeta[`variant-${fieldItem.id}`]?.fileName || 'Uploaded'}
+                        </div>
+                        {imageMeta[`variant-${fieldItem.id}`]?.uploading && (
+                          <div className="text-xs">Uploading...</div>
+                        )}
+                      </div>
+                    ) : null}
+                  </FormItem>
                 </div>
               </div>
             ))}

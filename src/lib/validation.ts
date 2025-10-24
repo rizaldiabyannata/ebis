@@ -129,6 +129,7 @@ export const productVariantSchema = z.object({
   sku: z.string().min(1),
   price: z.number().positive(),
   stock: z.number().int().min(0),
+  imageUrl: imageUrlSchema.optional(),
 });
 
 export const createProductSchema = z.object({

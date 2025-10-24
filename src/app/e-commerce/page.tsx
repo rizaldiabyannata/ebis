@@ -49,12 +49,12 @@ export default function EcommercePage() {
 
     const currentVariant = useMemo(() => {
         if (!currentProduct) return null;
-        const variantImage = currentProduct.images.find(img => img.id === currentProduct.variants[variantIndex]?.id);
+        const variant = currentProduct.variants[variantIndex];
         const mainImage = currentProduct.images.find(img => img.isMain) || currentProduct.images[0];
         
         return {
-            ...currentProduct.variants[variantIndex],
-            imageUrl: variantImage?.imageUrl || mainImage?.imageUrl,
+            ...variant,
+            imageUrl: variant?.imageUrl || mainImage?.imageUrl,
         };
     }, [currentProduct, variantIndex]);
 
