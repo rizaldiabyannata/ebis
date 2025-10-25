@@ -33,7 +33,7 @@ export default async function Home() {
 
 			<main>
 				{/* Hero Section */}
-				<section className="relative py-20 md:py-32 border-b bg-[#f0ce95] dark:bg-[#F6C784] dark:border-white/5">
+				<section className="relative py-20 md:py-32 border-b bg-[#f0ce95] dark:bg-[#f0ce95] dark:border-white/5">
 					<div className="absolute inset-0 bg-gradient-to-b from-amber-100/50 to-stone-50 dark:from-amber-900/10 dark:to-neutral-950 -z-10"></div>
 					<div className="container mx-auto grid md:grid-cols-2 gap-12 px-4 items-center">
 						<div className="space-y-5 text-center md:text-left">
@@ -50,7 +50,7 @@ export default async function Home() {
 										Mulai Belanja
 									</Link>
 								</Button>
-								<Button size="lg" variant="outline" className="rounded-full px-8 py-6 text-base font-bold border-stone-300 dark:border-neutral-700 hover:bg-stone-200/50 dark:hover:bg-neutral-800/50" asChild>
+								<Button size="lg" variant="outline" className="rounded-full px-8 py-6 text-base font-bold border-stone-300 dark:border-neutral-700 hover:bg-stone-200/50 dark:hover:bg-neutral-800/50 dark:bg-black dark:text-white" asChild>
 									<Link href="#about">
 										Tentang Kami
 										<ArrowRight className="ml-2 h-5 w-5"/>
@@ -63,7 +63,7 @@ export default async function Home() {
 								src="/Snack.png"
 								alt="Snack illustration"
 								fill
-								className="object-cover drop-shadow-2xl rounded-[30px]"
+								className="object-cover rounded-[30px]"
 								priority
 							/>
 						</div>

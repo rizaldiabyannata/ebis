@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { ModeToggle } from "./mode-toggle";
 
 export default function SiteHeader() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,6 +47,8 @@ export default function SiteHeader() {
                     <Button className="hidden sm:inline-flex bg-amber-500 hover:bg-amber-600 text-white" asChild>
                         <Link href="/register">Sign Up</Link>
                     </Button>
+
+                    <ModeToggle />
 
                     {/* Mobile Menu Button */}
                     <button
