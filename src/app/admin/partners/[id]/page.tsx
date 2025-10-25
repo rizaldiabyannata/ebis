@@ -103,7 +103,9 @@ export default function PartnerDetailPage() {
               {partner.products.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.description}</TableCell>
+                  <TableCell
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
                 </TableRow>
               ))}
             </TableBody>

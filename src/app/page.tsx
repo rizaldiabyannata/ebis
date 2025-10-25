@@ -20,6 +20,13 @@ export default async function Home() {
 		},
 	});
 
+	const partners = await prisma.partner.findMany({
+		take: 4,
+		orderBy: {
+			name: "asc",
+		},
+	});
+
 	return (
 		<div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 text-stone-800 dark:text-stone-200">
 			<SiteHeader />
@@ -83,9 +90,10 @@ export default async function Home() {
 								</div>
 								<div className="p-5">
 									<h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">{product.name}</h3>
-									<p className="text-sm text-stone-500 dark:text-stone-400 mt-1 truncate">
-										{product.description}
-									</p>
+									<div
+										className="text-sm text-stone-500 dark:text-stone-400 mt-1"
+										dangerouslySetInnerHTML={{ __html: product.description }}
+									/>
 									<Button variant="outline" size="sm" className="mt-4 w-full relative z-20 border-stone-300 dark:border-neutral-700 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-colors">
 										Lihat Produk
 									</Button>
@@ -100,6 +108,34 @@ export default async function Home() {
 								<ArrowRight className="ml-2 h-5 w-5"/>
 							</Link>
 						</Button>
+					</div>
+				</section>
+
+				{/* Partners Section */}
+				<section id="partners" className="bg-stone-100 dark:bg-neutral-900/80 border-y border-black/5 dark:border-white/5 py-16 md:py-24">
+					<div className="container mx-auto px-4">
+						<div className="max-w-2xl mx-auto text-center mb-12">
+							<h2 className="text-3xl md:text-4xl font-bold tracking-tight">Mitra Unggulan Kami</h2>
+							<p className="mt-3 text-lg text-stone-600 dark:text-stone-400">Temui beberapa mitra luar biasa yang produknya kami tampilkan.</p>
+						</div>
+						<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+							{partners.map((partner) => (
+								<div key={partner.id} className="group flex flex-col items-center text-center gap-4">
+									<div className="relative aspect-square w-32 rounded-full overflow-hidden border-2 border-stone-200 dark:border-neutral-800 shadow-md">
+										<Image
+											src={partner.imageUrl || "/logo.png"}
+											alt={partner.name}
+											fill
+											className="object-cover transition-transform duration-300 group-hover:scale-105"
+										/>
+									</div>
+									<div>
+										<h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">{partner.name}</h3>
+										<p className="text-sm text-stone-500 dark:text-stone-400 mt-1">{partner.description}</p>
+									</div>
+								</div>
+							))}
+						</div>
 					</div>
 				</section>
 
