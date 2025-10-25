@@ -46,6 +46,7 @@ function parseRupiahInput(raw: string): number {
 }
 
 type Category = { id: string; name: string };
+type Partner = { id: string; name: string };
 
 export function CreateProductForm({
   onSuccess,
@@ -55,7 +56,9 @@ export function CreateProductForm({
   onCancel?: () => void;
 }) {
   const [categories, setCategories] = React.useState<Category[]>([]);
+  const [partners, setPartners] = React.useState<Partner[]>([]);
   const [loadingCats, setLoadingCats] = React.useState(true);
+  const [loadingPartners, setLoadingPartners] = React.useState(true);
 
   // Prepare form with Zod validation
   const form = useForm<CreateProductRequest>({
@@ -112,6 +115,23 @@ export function CreateProductForm({
         toast.error(e?.message ?? "Failed to load categories");
       } finally {
         setLoadingCats(false);
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    (async () => {
+      setLoadingPartners(true);
+      try {
+        const res = await fetch("/api/partners", { cache: "no-store" });
+        if (!res.ok)
+          throw new Error(`Failed to load partners (${res.status})`);
+        const data: Partner[] = await res.json();
+        setPartners(data);
+      } catch (e: any) {
+        toast.error(e?.message ?? "Failed to load partners");
+      } finally {
+        setLoadingPartners(false);
       }
     })();
   }, []);
@@ -191,6 +211,35 @@ export function CreateProductForm({
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="partnerId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Partner</FormLabel>
+                  <FormControl>
+                    <select
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                      disabled={loadingPartners}
+                      {...field}
+                    >
+                      <option value="" disabled>
+                        {loadingPartners
+                          ? "Loading partners..."
+                          : "Select a partner"}
+                      </option>
+                      {partners.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
                         </option>
                       ))}
                     </select>

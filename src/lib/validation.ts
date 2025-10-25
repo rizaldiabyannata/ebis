@@ -136,6 +136,7 @@ export const createProductSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
   categoryId: z.string().uuid(),
+  partnerId: z.string().uuid().optional(),
   images: z.array(productImageSchema).min(1, 'At least one image is required'),
   variants: z.array(productVariantSchema).min(1, 'At least one variant is required'),
 });

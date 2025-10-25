@@ -107,7 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
-  const { name, description, categoryId } = parsed.data;
+  const { name, description, categoryId, partnerId } = parsed.data;
   const images: ProductImageInput[] = parsed.data.images;
   const variants = parsed.data.variants;
 
@@ -128,6 +128,7 @@ export async function POST(request: Request) {
         name,
         description,
         categoryId,
+        partnerId,
         images: {
           create: images.map(({ imageUrl, isMain }) => ({ imageUrl, isMain })),
         },
