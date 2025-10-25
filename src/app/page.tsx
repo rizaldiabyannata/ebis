@@ -58,7 +58,7 @@ export default async function Home() {
 								</Button>
 							</div>
 						</div>
-						<div className="relative aspect-square w-full max-w-md mx-auto rounded-[30px] overflow-hidden dark:bg-[#a95633]">
+						<div className="relative aspect-square w-full max-w-md mx-auto">
 							<Image
 								src="/Snack.png"
 								alt="Snack illustration"

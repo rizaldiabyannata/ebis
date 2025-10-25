@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteHeader from "@/components/SiteHeader";
-// Tipe data untuk produk yang diambil dari API, termasuk relasi
+
 type ProductWithRelations = Product & {
   variants: ProductVariant[];
   images: ProductImage[];
@@ -20,7 +20,7 @@ export default function EcommercePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [productIndex, setProductIndex] = useState(0);
     const [variantIndex, setVariantIndex] = useState(0);
-    const [direction, setDirection] = useState(0); // 0 = no move, 1 = next, -1 = prev
+    const [direction, setDirection] = useState(0); 
 
     // Fetch data from API
     useEffect(() => {
