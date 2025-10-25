@@ -42,7 +42,6 @@ export function CreatePartnerForm({
     defaultValues: {
       name: "",
       description: "",
-      imageUrl: "",
     },
     mode: "onChange",
   });
