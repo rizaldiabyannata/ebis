@@ -1,21 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import  prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { z } from 'zod';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+const partnerSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().min(1, 'Description is required'),
+  imageUrl: z.string().url().optional(),
+});
+
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
     const partner = await prisma.partner.findUnique({
-      where: { id },
-      include: {
-        products: {
-          include: {
-            variants: true,
-          },
-        },
-      },
+      where: { id: params.id },
     });
 
     if (!partner) {
@@ -24,9 +20,52 @@ export async function GET(
 
     return NextResponse.json(partner);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch partner' },
-      { status: 500 }
-    );
+    console.error('[PARTNER_GET]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const body = await request.json();
+    const parsed = partnerSchema.safeParse(body);
+
+    if (!parsed.success) {
+      const { issues } = parsed.error;
+      return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
+    }
+
+    const { name, description, imageUrl } = parsed.data;
+
+    const partner = await prisma.partner.update({
+      where: { id: params.id },
+      data: {
+        name,
+        description,
+        imageUrl,
+      },
+    });
+
+    return NextResponse.json(partner);
+  } catch (error) {
+    console.error('[PARTNER_PUT]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    await prisma.partner.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({ message: 'Partner deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('[PARTNER_DELETE]', error);
+    // Handle cases where the partner might have related records that prevent deletion
+    if ((error as any).code === 'P2003') {
+       return NextResponse.json({ error: 'Cannot delete partner with existing products.' }, { status: 409 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

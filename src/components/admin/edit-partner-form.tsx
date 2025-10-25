@@ -16,19 +16,28 @@ import {
 import { z } from "zod";
 import { toast } from "sonner";
 
-const createPartnerSchema = z.object({
+const editPartnerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
   imageUrl: z.string().url().optional(),
 });
 
-type CreatePartnerRequest = z.infer<typeof createPartnerSchema>;
+type EditPartnerRequest = z.infer<typeof editPartnerSchema>;
 
-export function CreatePartnerForm({
+interface Partner {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+}
+
+export function EditPartnerForm({
+  initialData,
   onSuccess,
   onCancel,
 }: {
-  onSuccess?: (createdId: string) => void;
+  initialData: Partner;
+  onSuccess?: () => void;
   onCancel?: () => void;
 }) {
   const [imageMeta, setImageMeta] = React.useState<{
@@ -37,34 +46,33 @@ export function CreatePartnerForm({
     uploading?: boolean;
   } | null>(null);
 
-  const form = useForm<CreatePartnerRequest>({
-    resolver: zodResolver(createPartnerSchema),
+  const form = useForm<EditPartnerRequest>({
+    resolver: zodResolver(editPartnerSchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: initialData.name,
+      description: initialData.description,
+      imageUrl: initialData.imageUrl || undefined,
     },
     mode: "onChange",
   });
 
-  const onSubmit = async (values: CreatePartnerRequest) => {
+  const onSubmit = async (values: EditPartnerRequest) => {
     try {
-      const res = await fetch("/api/partners", {
-        method: "POST",
+      const res = await fetch(`/api/partners/${initialData.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(
-          err?.error || `Failed to create partner (${res.status})`
+          err?.error || `Failed to update partner (${res.status})`
         );
       }
-      const created = await res.json();
-      toast.success("Partner created successfully");
-      onSuccess?.(created.id);
-      form.reset();
+      toast.success("Partner updated successfully");
+      onSuccess?.();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to create partner");
+      toast.error(e?.message ?? "Failed to update partner");
     }
   };
 
@@ -104,16 +112,10 @@ export function CreatePartnerForm({
                     shouldDirty: true,
                     shouldValidate: true,
                   });
-                  setImageMeta((prev) => ({
-                    ...prev,
-                    uploading: false,
-                  }));
+                  setImageMeta((prev) => ({ ...prev, uploading: false }));
                   toast.success("Image uploaded");
                 } catch (err: any) {
-                  setImageMeta((prev) => ({
-                    ...prev,
-                    uploading: false,
-                  }));
+                  setImageMeta((prev) => ({ ...prev, uploading: false }));
                   toast.error(`Upload failed: ${err.message || "An unknown error occurred"}`);
                 }
               }}
@@ -144,7 +146,7 @@ export function CreatePartnerForm({
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. HepiBite" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -157,7 +159,7 @@ export function CreatePartnerForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Official HepiBite Store" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -169,7 +171,7 @@ export function CreatePartnerForm({
               Cancel
             </Button>
           )}
-          <Button type="submit">Create Partner</Button>
+          <Button type="submit">Save Changes</Button>
         </div>
       </form>
     </Form>
