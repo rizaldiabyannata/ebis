@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import SiteHeader from "@/components/SiteHeader";
 
 // Tipe data untuk produk yang diambil dari API, termasuk relasi
 type ProductWithRelations = Product & {
@@ -105,24 +106,7 @@ export default function EcommercePage() {
             {/* Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-amber-400/30 dark:bg-amber-500/20 rounded-full blur-3xl opacity-40 animate-pulse" />
 
-            {/* Navbar */}
-            <header className="sticky top-0 z-50 w-full border-b border-black/5 dark:border-white/5 bg-white/30 dark:bg-black/30 backdrop-blur-xl">
-                 <div className="container mx-auto flex items-center justify-between p-4">
-                    <Link href="/" className="flex items-center gap-2">
-                        <Image src="/logo.png" alt="HepiBite" width={32} height={32} className="rounded-md" />
-                        <span className="text-xl font-bold tracking-tighter">
-                            <span className="text-amber-500">Hepi</span><span className="text-stone-700 dark:text-stone-300">Bite</span>
-                        </span>
-                    </Link>
-                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600 dark:text-stone-400">
-                         <Link href="/" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Home</Link>
-                         <Link href="/e-commerce" className="font-semibold text-amber-500">E-commerce</Link>
-                    </nav>
-                     <Button variant="ghost" className="text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-neutral-800" asChild>
-                        <Link href="/login">Login</Link>
-                    </Button>
-                </div>
-            </header>
+            <SiteHeader />
 
             {/* Main Content */}
             <main className="flex-grow flex items-center justify-center p-4">
@@ -250,16 +234,7 @@ function ArrowButton({ direction, onClick, className = "" }: { direction: "left"
 function LoadingSkeleton() {
     return (
         <div className="min-h-screen flex flex-col bg-stone-100 dark:bg-neutral-950">
-            <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/5 bg-white/30 dark:bg-black/30 backdrop-blur-xl">
-                 <div className="container mx-auto flex items-center justify-between p-4">
-                     <Skeleton className="h-8 w-32 rounded-md" />
-                     <div className="hidden md:flex items-center gap-6">
-                        <Skeleton className="h-6 w-16 rounded-md" />
-                        <Skeleton className="h-6 w-24 rounded-md" />
-                     </div>
-                     <Skeleton className="h-9 w-20 rounded-md" />
-                </div>
-            </header>
+            <SiteHeader />
              <main className="flex-grow flex items-center justify-center p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-4xl w-full">
                     <Skeleton className="w-full aspect-square rounded-2xl" />
