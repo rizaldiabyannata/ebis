@@ -5,6 +5,7 @@ import { z } from 'zod';
 const createPartnerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().min(1, 'Description is required'),
+  imageUrl: z.string().url().optional(),
 });
 
 export async function GET() {
@@ -19,12 +20,13 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, description } = createPartnerSchema.parse(body);
+    const { name, description, imageUrl } = createPartnerSchema.parse(body);
 
     const partner = await prisma.partner.create({
       data: {
         name,
         description,
+        imageUrl,
       },
     });
 

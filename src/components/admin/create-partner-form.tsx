@@ -19,6 +19,7 @@ import { toast } from "sonner";
 const createPartnerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
+  imageUrl: z.string().url().optional(),
 });
 
 type CreatePartnerRequest = z.infer<typeof createPartnerSchema>;
@@ -30,11 +31,18 @@ export function CreatePartnerForm({
   onSuccess?: (createdId: string) => void;
   onCancel?: () => void;
 }) {
+  const [imageMeta, setImageMeta] = React.useState<{
+    fileName?: string;
+    preview?: string;
+    uploading?: boolean;
+  } | null>(null);
+
   const form = useForm<CreatePartnerRequest>({
     resolver: zodResolver(createPartnerSchema),
     defaultValues: {
       name: "",
       description: "",
+      imageUrl: "",
     },
     mode: "onChange",
   });
@@ -64,6 +72,71 @@ export function CreatePartnerForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormItem>
+          <FormLabel>Partner Image</FormLabel>
+          <FormControl>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                const preview = URL.createObjectURL(file);
+                setImageMeta({
+                  fileName: file.name,
+                  preview,
+                  uploading: true,
+                });
+
+                const data = new FormData();
+                data.append("file", file);
+
+                try {
+                  const res = await fetch("/api/upload", {
+                    method: "POST",
+                    body: data,
+                  });
+                  if (!res.ok) throw new Error("Upload failed");
+
+                  const json = await res.json();
+                  form.setValue("imageUrl", json.url, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  setImageMeta((prev) => ({
+                    ...prev,
+                    uploading: false,
+                  }));
+                  toast.success("Image uploaded");
+                } catch (err) {
+                  setImageMeta((prev) => ({
+                    ...prev,
+                    uploading: false,
+                  }));
+                  toast.error(`Upload failed: ${err}`);
+                }
+              }}
+            />
+          </FormControl>
+          <FormMessage />
+          {imageMeta?.preview || form.watch("imageUrl") ? (
+            <div className="mt-2 flex items-center gap-3">
+              <img
+                src={imageMeta?.preview || form.watch("imageUrl")}
+                alt="Partner preview"
+                className="border object-cover rounded h-12 w-12"
+              />
+              <div className="text-muted-foreground text-xs">
+                {imageMeta?.fileName || "Uploaded"}
+              </div>
+              {imageMeta?.uploading && (
+                <div className="text-xs">Uploading...</div>
+              )}
+            </div>
+          ) : null}
+        </FormItem>
+
         <FormField
           control={form.control}
           name="name"

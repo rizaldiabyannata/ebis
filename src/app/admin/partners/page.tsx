@@ -28,16 +28,19 @@ import {
 } from '@/components/ui/sheet';
 import { CreatePartnerForm } from '@/components/admin/create-partner-form';
 import { PlusIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Partner {
   id: string;
   name: string;
   description: string;
+  imageUrl?: string;
 }
 
 export default function PartnersPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
+  const router = useRouter();
 
   const fetchPartners = useCallback(async () => {
     const res = await fetch('/api/partners');
@@ -62,13 +65,27 @@ export default function PartnersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Image</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Description</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {partners.map((partner) => (
-                    <TableRow key={partner.id}>
+                    <TableRow
+                      key={partner.id}
+                      onClick={() => router.push(`/admin/partners/${partner.id}`)}
+                      className="cursor-pointer"
+                    >
+                      <TableCell>
+                        {partner.imageUrl && (
+                          <img
+                            src={partner.imageUrl}
+                            alt={partner.name}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                        )}
+                      </TableCell>
                       <TableCell>{partner.name}</TableCell>
                       <TableCell>{partner.description}</TableCell>
                     </TableRow>
