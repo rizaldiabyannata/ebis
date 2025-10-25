@@ -33,14 +33,14 @@ export default async function Home() {
 
 			<main>
 				{/* Hero Section */}
-				<section className="relative py-20 md:py-32 border-b bg-[#f0ce95] dark:bg-[#f0ce95] dark:border-white/5">
+				<section className="relative py-20 md:py-32 border-b bg-[#f0ce95] dark:bg-[#a95633] dark:border-white/5">
 					<div className="absolute inset-0 bg-gradient-to-b from-amber-100/50 to-stone-50 dark:from-amber-900/10 dark:to-neutral-950 -z-10"></div>
 					<div className="container mx-auto grid md:grid-cols-2 gap-12 px-4 items-center">
 						<div className="space-y-5 text-center md:text-left">
 							<h1 className="text-4xl lg:text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-stone-800 to-stone-600 dark:from-stone-100 dark:to-stone-300">
 								Temukan Snack Favorit dan Unik Hanya di HepiBite
 							</h1>
-							<p className="text-lg text-stone-600 dark:text-stone-400 max-w-prose mx-auto md:mx-0">
+							<p className="text-lg text-stone-600 dark:text-black max-w-prose mx-auto md:mx-0">
 								Jelajahi ribuan pilihan snack dari pedagang lokal terbaik. Kualitas terjamin, rasa tak terlupakan.
 							</p>
 							<div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
@@ -58,7 +58,7 @@ export default async function Home() {
 								</Button>
 							</div>
 						</div>
-						<div className="relative aspect-square w-full max-w-md mx-auto">
+						<div className="relative aspect-square w-full max-w-md mx-auto rounded-[30px] overflow-hidden dark:bg-[#a95633]">
 							<Image
 								src="/Snack.png"
 								alt="Snack illustration"

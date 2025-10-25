@@ -128,7 +128,7 @@ export default function EcommercePage() {
                             className="w-full max-w-md lg:max-w-4xl"
                         >
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                                {/* Image Viewer */}
+                                {/* Image Viewer with Navigation */}
                                 <div className="relative w-full aspect-square flex items-center justify-center">
                                     <AnimatePresence mode="wait">
                                         <motion.div
@@ -149,6 +149,18 @@ export default function EcommercePage() {
                                             />
                                         </motion.div>
                                     </AnimatePresence>
+                                    
+                                    {/* Arrow buttons positioned over the image */}
+                                    <ArrowButton 
+                                        direction="left" 
+                                        onClick={() => navigateProduct(-1)} 
+                                        className="absolute z-10 top-1/2 -translate-y-1/2 left-2 sm:left-4 size-12 sm:size-14" 
+                                    />
+                                    <ArrowButton 
+                                        direction="right" 
+                                        onClick={() => navigateProduct(1)} 
+                                        className="absolute z-10 top-1/2 -translate-y-1/2 right-2 sm:right-4 size-12 sm:size-14" 
+                                    />
                                 </div>
                                 
                                 {/* Product Details */}
@@ -163,7 +175,7 @@ export default function EcommercePage() {
                                     
                                     <div className="mt-6 w-full">
                                         <p className="text-sm font-medium text-stone-600 dark:text-stone-400 mb-3">Pilih Varian:</p>
-                                        <div className="flex flex-wrap gap-3">
+                                        <div className="flex flex-wrap justify-center lg:justify-start gap-3">
                                             {currentProduct.variants.map((variant, index) => (
                                                 <motion.button
                                                     key={variant.id}
@@ -197,12 +209,6 @@ export default function EcommercePage() {
                                             </Link>
                                         </Button>
                                     </motion.div>
-
-                                    {/* Product Navigation */}
-                                    <div className="mt-8 flex items-center justify-center lg:justify-start gap-4">
-                                        <ArrowButton direction="left" onClick={() => navigateProduct(-1)} />
-                                        <ArrowButton direction="right" onClick={() => navigateProduct(1)} />
-                                    </div>
                                 </div>
                             </div>
                         </motion.div>
