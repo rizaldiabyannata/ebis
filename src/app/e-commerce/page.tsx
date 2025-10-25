@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
@@ -15,12 +16,13 @@ type ProductWithRelations = Product & {
   images: ProductImage[];
 };
 
-export default function EcommercePage() {
+function EcommercePageContent() {
     const [products, setProducts] = useState<ProductWithRelations[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [productIndex, setProductIndex] = useState(0);
     const [variantIndex, setVariantIndex] = useState(0);
     const [direction, setDirection] = useState(0); 
+    const searchParams = useSearchParams();
 
     // Fetch data from API
     useEffect(() => {
@@ -32,6 +34,14 @@ export default function EcommercePage() {
                 
                 const validProducts = data.filter(p => p.variants.length > 0 && p.images.length > 0);
                 setProducts(validProducts);
+                
+                const productId = searchParams.get('productId');
+                if (productId) {
+                    const foundIndex = validProducts.findIndex(p => p.id === productId);
+                    if (foundIndex !== -1) {
+                        setProductIndex(foundIndex);
+                    }
+                }
 
             } catch (error) {
                 console.error("Fetch error:", error);
@@ -40,7 +50,7 @@ export default function EcommercePage() {
             }
         }
         fetchProducts();
-    }, []);
+    }, [searchParams]);
     
     const currentProduct = useMemo(() => {
         if (!products || products.length === 0) return null;
@@ -215,6 +225,14 @@ export default function EcommercePage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function EcommercePage() {
+    return (
+        <Suspense fallback={<LoadingSkeleton />}>
+            <EcommercePageContent />
+        </Suspense>
     );
 }
 
