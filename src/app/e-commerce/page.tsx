@@ -9,7 +9,6 @@ import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteHeader from "@/components/SiteHeader";
-
 // Tipe data untuk produk yang diambil dari API, termasuk relasi
 type ProductWithRelations = Product & {
   variants: ProductVariant[];
@@ -106,6 +105,7 @@ export default function EcommercePage() {
             {/* Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-amber-400/30 dark:bg-amber-500/20 rounded-full blur-3xl opacity-40 animate-pulse" />
 
+            {/* Navbar */}
             <SiteHeader />
 
             {/* Main Content */}
@@ -128,7 +128,7 @@ export default function EcommercePage() {
                             className="w-full max-w-md lg:max-w-4xl"
                         >
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                                {/* Image Viewer with Navigation */}
+                                {/* Image Viewer */}
                                 <div className="relative w-full aspect-square flex items-center justify-center">
                                     <AnimatePresence mode="wait">
                                         <motion.div
@@ -149,29 +149,22 @@ export default function EcommercePage() {
                                             />
                                         </motion.div>
                                     </AnimatePresence>
-                                    
-                                    {/* Arrow buttons positioned over the image */}
-                                    <ArrowButton 
-                                        direction="left" 
-                                        onClick={() => navigateProduct(-1)} 
-                                        className="absolute z-10 top-1/2 -translate-y-1/2 left-2 sm:left-4 size-12 sm:size-14" 
-                                    />
-                                    <ArrowButton 
-                                        direction="right" 
-                                        onClick={() => navigateProduct(1)} 
-                                        className="absolute z-10 top-1/2 -translate-y-1/2 right-2 sm:right-4 size-12 sm:size-14" 
-                                    />
                                 </div>
                                 
                                 {/* Product Details */}
                                 <div className="flex flex-col text-center lg:text-left items-center lg:items-start">
-                                    <motion.h1 
-                                        key={`title-${productIndex}`}
-                                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.4 }}
-                                        className="text-4xl md:text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-stone-800 to-stone-600 dark:from-stone-100 dark:to-stone-300"
-                                    >
-                                        {currentProduct.name}
-                                    </motion.h1>
+                                    {/* Product Name and Mobile Navigation */}
+                                    <div className="w-full flex items-center justify-center lg:justify-start gap-4">
+                                        <ArrowButton direction="left" onClick={() => navigateProduct(-1)} className="lg:hidden size-12" />
+                                        <motion.h1 
+                                            key={`title-${productIndex}`}
+                                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.4 }}
+                                            className="text-4xl md:text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-stone-800 to-stone-600 dark:from-stone-100 dark:to-stone-300"
+                                        >
+                                            {currentProduct.name}
+                                        </motion.h1>
+                                        <ArrowButton direction="right" onClick={() => navigateProduct(1)} className="lg:hidden size-12" />
+                                    </div>
                                     
                                     <div className="mt-6 w-full">
                                         <p className="text-sm font-medium text-stone-600 dark:text-stone-400 mb-3">Pilih Varian:</p>
@@ -209,6 +202,12 @@ export default function EcommercePage() {
                                             </Link>
                                         </Button>
                                     </motion.div>
+
+                                    {/* Product Navigation (Desktop only) */}
+                                    <div className="mt-8 hidden lg:flex items-center justify-center lg:justify-start gap-4">
+                                        <ArrowButton direction="left" onClick={() => navigateProduct(-1)} />
+                                        <ArrowButton direction="right" onClick={() => navigateProduct(1)} />
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
@@ -240,7 +239,16 @@ function ArrowButton({ direction, onClick, className = "" }: { direction: "left"
 function LoadingSkeleton() {
     return (
         <div className="min-h-screen flex flex-col bg-stone-100 dark:bg-neutral-950">
-            <SiteHeader />
+            <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/5 bg-white/30 dark:bg-black/30 backdrop-blur-xl">
+                 <div className="container mx-auto flex items-center justify-between p-4">
+                     <Skeleton className="h-8 w-32 rounded-md" />
+                     <div className="hidden md:flex items-center gap-6">
+                        <Skeleton className="h-6 w-16 rounded-md" />
+                        <Skeleton className="h-6 w-24 rounded-md" />
+                     </div>
+                     <Skeleton className="h-9 w-20 rounded-md" />
+                </div>
+            </header>
              <main className="flex-grow flex items-center justify-center p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-4xl w-full">
                     <Skeleton className="w-full aspect-square rounded-2xl" />
