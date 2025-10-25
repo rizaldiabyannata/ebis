@@ -46,6 +46,7 @@ import {
 import { CreatePartnerForm } from '@/components/admin/create-partner-form';
 import { EditPartnerForm } from '@/components/admin/edit-partner-form';
 import { MoreHorizontal, PlusIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 interface Partner {
@@ -60,6 +61,7 @@ export default function PartnersPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [deletingPartner, setDeletingPartner] = useState<Partner | null>(null);
+  const router = useRouter();
 
   const handleDeletePartner = async () => {
     if (!deletingPartner) return;
@@ -112,7 +114,11 @@ export default function PartnersPage() {
                 </TableHeader>
                 <TableBody>
                   {partners.map((partner) => (
-                    <TableRow key={partner.id}>
+                    <TableRow
+                      key={partner.id}
+                      onClick={() => router.push(`/admin/partners/${partner.id}`)}
+                      className="cursor-pointer"
+                    >
                       <TableCell>
                         {partner.imageUrl && (
                           <img
@@ -124,7 +130,7 @@ export default function PartnersPage() {
                       </TableCell>
                       <TableCell>{partner.name}</TableCell>
                       <TableCell>{partner.description}</TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button

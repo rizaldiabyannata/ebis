@@ -12,6 +12,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   try {
     const partner = await prisma.partner.findUnique({
       where: { id: params.id },
+      include: {
+        products: true,
+      },
     });
 
     if (!partner) {
