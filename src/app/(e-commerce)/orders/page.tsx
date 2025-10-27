@@ -9,8 +9,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import type {
+  Order as PrismaOrder,
+  Delivery as PrismaDelivery,
+} from "@prisma/client";
 
-async function getOrders() {
+// Local shapes used to avoid direct Prisma type coupling in the UI layer
+type DeliveryForClient = {
+  recipientName?: string | null;
+  recipientPhone?: string | null;
+  status?: string | null;
+};
+
+type OrderForClient = {
+  id: string;
+  orderNumber: string;
+  orderDate: string; // ISO string for safe rendering
+  status: string;
+  delivery?: DeliveryForClient | null;
+};
+
+async function getOrders(): Promise<
+  (PrismaOrder & { delivery: PrismaDelivery | null })[]
+> {
   const orders = await prisma.order.findMany({
     include: {
       delivery: true,
@@ -23,7 +44,24 @@ async function getOrders() {
 }
 
 export default async function OrdersPage() {
-  const orders = await getOrders();
+  const ordersData = await getOrders();
+
+  // Normalize data for the client: convert Date -> ISO string
+  const orders: OrderForClient[] = ordersData.map(
+    (o: PrismaOrder & { delivery: PrismaDelivery | null }) => ({
+      id: o.id,
+      orderNumber: o.orderNumber,
+      orderDate: new Date(o.orderDate).toISOString(),
+      status: o.status,
+      delivery: o.delivery
+        ? {
+            recipientName: o.delivery.recipientName,
+            recipientPhone: o.delivery.recipientPhone,
+            status: o.delivery.status,
+          }
+        : null,
+    })
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
