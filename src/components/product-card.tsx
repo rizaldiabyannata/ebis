@@ -77,7 +77,11 @@ function UserProductCard({ product }: { product: Product }) {
               {product.description}
             </CardDescription>
             <p className="mt-4 text-xl font-semibold">
-              ${product.price.toFixed(2)}
+              $
+              {(product.variants && product.variants.length > 0
+                ? Math.min(...product.variants.map((v) => v.price))
+                : 0
+              ).toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -135,10 +139,7 @@ function AdminProductCard({
         {isExpanded && (
           <div className="w-full space-y-2">
             {product.variants.map((variant) => (
-              <div
-                key={variant.id}
-                className="rounded-md border p-2 text-sm"
-              >
+              <div key={variant.id} className="rounded-md border p-2 text-sm">
                 <p>
                   <strong>{variant.name}</strong>
                 </p>

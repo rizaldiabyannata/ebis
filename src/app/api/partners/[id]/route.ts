@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -8,7 +8,7 @@ const partnerSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: any) {
   try {
     const partner = await prisma.partner.findUnique({
       where: { id: params.id },
@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: any) {
   try {
     const body = await request.json();
     const parsed = partnerSchema.safeParse(body);
@@ -56,7 +56,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: any) {
   try {
     await prisma.partner.delete({
       where: { id: params.id },

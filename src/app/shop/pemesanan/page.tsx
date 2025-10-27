@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import SiteHeader from "@/components/SiteHeader";
 import prisma from "@/lib/prisma";
 import PemesananForm from "../../../components/Pemesanan/pemesananform";
