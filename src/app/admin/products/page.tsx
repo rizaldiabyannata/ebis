@@ -64,9 +64,15 @@ export default function ProductsPage() {
         id: p.id,
         name: p.name,
         description: p.description,
-        price: p.variants[0] ? Number(p.variants[0].price) : 0,
         imageUrls:
           p.images.length > 0 ? p.images.map((img) => img.imageUrl) : [],
+        variants: p.variants.map((v) => ({
+          id: v.id,
+          name: v.name,
+          price: Number(v.price),
+          stock: v.stock,
+          sku: v.sku,
+        })),
       }));
       setProducts(mapped);
     } catch (e: any) {

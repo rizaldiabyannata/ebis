@@ -45,7 +45,7 @@ export default async function Home() {
 							</p>
 							<div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
 								<Button size="lg" className="rounded-full px-8 py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105" asChild>
-									<Link href="/e-commerce">
+									<Link href="/shop">
 										<ShoppingBag className="mr-2 h-5 w-5"/>
 										Mulai Belanja
 									</Link>
@@ -79,7 +79,7 @@ export default async function Home() {
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
 						{products.map((product) => (
 							<div key={product.id} className="group relative border bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col">
-								<Link href={`/e-commerce?productId=${product.id}`} className="absolute inset-0 z-10" aria-label={product.name}></Link>
+								<Link href={`/shop?productId=${product.id}`} className="absolute inset-0 z-10" aria-label={product.name}></Link>
 								<div className="relative aspect-square w-full">
 									<Image
 										src={product.images[0]?.imageUrl || "/logo.png"}
@@ -103,7 +103,7 @@ export default async function Home() {
 					</div>
 					<div className="text-center mt-12">
 						<Button size="lg" variant="outline" className="rounded-full px-8 border-stone-300 dark:border-neutral-700 hover:bg-stone-100 dark:hover:bg-neutral-800" asChild>
-							<Link href="/e-commerce">
+							<Link href="/shop">
 								Lihat Semua Produk
 								<ArrowRight className="ml-2 h-5 w-5"/>
 							</Link>

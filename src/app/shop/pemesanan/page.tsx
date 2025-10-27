@@ -14,8 +14,13 @@ async function getProducts() {
   return products;
 }
 
-export default async function PemesananPage() {
+export default async function PemesananPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const productsData = await getProducts();
+  const selectedVariantId = searchParams.variantId as string | undefined;
 
   // Convert Decimal fields to numbers for client-side serialization
   const products = productsData.map((product) => ({
@@ -30,7 +35,10 @@ export default async function PemesananPage() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="container mx-auto px-4 py-10 max-w-4xl">
-        <PemesananForm products={products} />
+        <PemesananForm
+          products={products}
+          selectedVariantId={selectedVariantId}
+        />
       </main>
     </div>
   );

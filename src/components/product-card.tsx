@@ -27,9 +27,15 @@ import {
 export interface Product {
   id: string;
   name: string;
-  price: number;
   description: string;
   imageUrls: string[];
+  variants: {
+    id: string;
+    name: string;
+    price: number;
+    stock: number;
+    sku: string;
+  }[];
 }
 
 interface ProductCardProps {
@@ -87,11 +93,16 @@ function AdminProductCard({
   product: Product;
   onDelete?: (productId: string) => void;
 }) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
   const handleDelete = () => {
     if (onDelete) {
       onDelete(product.id);
     }
   };
+
+  const lowestPrice = Math.min(...product.variants.map((v) => v.price));
+
   return (
     <Card className="w-full max-w-sm overflow-hidden rounded-lg shadow-lg">
       <CardHeader className="p-0">
@@ -106,11 +117,38 @@ function AdminProductCard({
       </CardHeader>
       <CardContent className="p-4">
         <CardTitle className="text-lg">{product.name}</CardTitle>
+        <p className="mt-2 text-sm text-gray-500">
+          {product.variants.length} variant(s)
+        </p>
         <p className="mt-4 text-xl font-semibold">
-          Rp{product.price.toFixed(2)}
+          Starts from Rp{lowestPrice.toFixed(2)}
         </p>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="flex-col items-start p-4 pt-0">
+        <Button
+          onClick={() => setIsExpanded(!isExpanded)}
+          variant="link"
+          className="mb-2 px-0"
+        >
+          {isExpanded ? "Hide Variants" : "View Variants"}
+        </Button>
+        {isExpanded && (
+          <div className="w-full space-y-2">
+            {product.variants.map((variant) => (
+              <div
+                key={variant.id}
+                className="rounded-md border p-2 text-sm"
+              >
+                <p>
+                  <strong>{variant.name}</strong>
+                </p>
+                <p>Price: Rp{variant.price.toFixed(2)}</p>
+                <p>Stock: {variant.stock}</p>
+                <p>SKU: {variant.sku}</p>
+              </div>
+            ))}
+          </div>
+        )}
         <AdminControls productId={product.id} onDelete={handleDelete} />
       </CardFooter>
     </Card>

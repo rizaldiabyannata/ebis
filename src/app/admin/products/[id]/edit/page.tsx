@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { use, useEffect, useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,9 +34,19 @@ export default function ProductEditPage({
     defaultValues: {
       name: "",
       description: "",
-      price: 0,
+      variants: [] as {
+        name: string;
+        price: number;
+        stock: number;
+        sku: string;
+      }[],
       imageUrls: [] as string[],
     },
+  });
+
+  const { fields, append, remove, update } = useFieldArray({
+    control: form.control,
+    name: "variants",
   });
 
   useEffect(() => {
@@ -48,18 +58,23 @@ export default function ProductEditPage({
         if (res.status === 404) return notFound();
         if (!res.ok) throw new Error("Failed to load product");
         const data = await res.json();
-        const mapped: Product = {
+        const mapped = {
           id: data.id,
           name: data.name,
           description: data.description,
-          price: data.variants[0] ? Number(data.variants[0].price) : 0,
+          variants: data.variants.map((v: any) => ({
+            name: v.name,
+            price: Number(v.price),
+            stock: v.stock,
+            sku: v.sku,
+          })),
           imageUrls: data.images?.map((img: any) => img.imageUrl) ?? [],
         };
-        setProduct(mapped);
+        setProduct(mapped as Product);
         form.reset({
           name: mapped.name,
           description: mapped.description,
-          price: mapped.price,
+          variants: mapped.variants,
           imageUrls: mapped.imageUrls,
         });
       } catch (e: any) {
@@ -75,25 +90,19 @@ export default function ProductEditPage({
   }
 
   const handleSubmit = async (values: any) => {
-    // NOTE: Saat ini imageUrls berisi Object URL (blob:...) hasil dari Input File.
-    // Untuk produksi: lakukan upload ke storage/CDN lalu ganti array ini dengan URL permanen.
     if (!product) return;
-    const updatedProduct: Product = {
-      id: product.id,
-      name: values.name,
-      description: values.description,
-      price: values.price,
-      imageUrls: values.imageUrls.filter((url: string) => url.trim() !== ""),
-    };
     try {
-      const res = await fetch(`/api/products/${product!.id}`, {
+      const res = await fetch(`/api/products/${product.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: updatedProduct.name,
-          description: updatedProduct.description,
-          // price and images are modelled across variants/images in backend;
-          // for a full edit, you'd also send variants/images payloads and update those endpoints.
+          name: values.name,
+          description: values.description,
+          variants: values.variants,
+          images: values.imageUrls.map((url: string, index: number) => ({
+            imageUrl: url,
+            isMain: index === 0,
+          })),
         }),
       });
       if (!res.ok) throw new Error("Failed to save product");
@@ -149,23 +158,107 @@ export default function ProductEditPage({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        placeholder="e.g. 149.99"
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Variants</CardTitle>
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        append({
+                          name: "",
+                          price: 0,
+                          stock: 0,
+                          sku: "",
+                        })
+                      }
+                    >
+                      Add Variant
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-5 gap-3 rounded-md border p-4"
+                    >
+                      <FormField
+                        control={form.control}
+                        name={`variants.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Red, Large" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormField
+                        control={form.control}
+                        name={`variants.${index}.price`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Price</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                placeholder="e.g. 149.99"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`variants.${index}.stock`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Stock</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                placeholder="e.g. 100"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`variants.${index}.sku`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>SKU</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="e.g. SKU-RED-LARGE"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
               <FormField
                 control={form.control}
                 name="imageUrls"
