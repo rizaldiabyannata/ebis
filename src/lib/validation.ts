@@ -137,7 +137,7 @@ export const createProductSchema = z.object({
   description: z.string().min(1),
   categoryId: z.string().uuid(),
   partnerId: z.string().uuid().optional(),
-  images: z.array(productImageSchema).min(1, 'At least one image is required'),
+  // Product-level images removed: variants own their images now.
   variants: z.array(productVariantSchema).min(1, 'At least one variant is required'),
 });
 
@@ -150,6 +150,9 @@ export const updateProductSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
   categoryId: z.string().uuid().optional(),
+  // Allow updating variants when editing a product. The handler will
+  // replace existing variants with the provided list.
+  variants: z.array(productVariantSchema).optional(),
 });
 
 export const createVoucherSchema = z.object({

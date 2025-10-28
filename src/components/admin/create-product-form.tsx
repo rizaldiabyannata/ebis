@@ -24,7 +24,6 @@ import {
 import {
   createProductSchema,
   CreateProductRequest,
-  ProductImageInput,
   ProductVariantInput,
 } from "@/lib/validation";
 import { toast } from "sonner";
@@ -67,20 +66,12 @@ export function CreateProductForm({
       name: "",
       description: "",
       categoryId: "",
-      images: [{ imageUrl: "", isMain: true }] as ProductImageInput[],
       variants: [
         { name: "", sku: "", price: 0, stock: 0 },
       ] as ProductVariantInput[],
     },
     mode: "onChange",
   });
-
-  const {
-    fields: imageFields,
-    append: appendImage,
-    remove: removeImage,
-    update: updateImage,
-  } = useFieldArray({ control: form.control, name: "images" });
 
   // Keep local preview/filename so the image 'stays' visible even if the file input re-renders
   const [imageMeta, setImageMeta] = React.useState<
@@ -124,8 +115,7 @@ export function CreateProductForm({
       setLoadingPartners(true);
       try {
         const res = await fetch("/api/partners", { cache: "no-store" });
-        if (!res.ok)
-          throw new Error(`Failed to load partners (${res.status})`);
+        if (!res.ok) throw new Error(`Failed to load partners (${res.status})`);
         const data: Partner[] = await res.json();
         setPartners(data);
       } catch (e: any) {
@@ -136,29 +126,10 @@ export function CreateProductForm({
     })();
   }, []);
 
-  // Ensure exactly one main image
-  const setMainImage = (index: number) => {
-    imageFields.forEach((_, i) => {
-      const current = form.getValues(`images.${i}`);
-      updateImage(i, { ...current, isMain: i === index });
-    });
-  };
+  // Product-level images removed: variants own their images.
 
   const onSubmit = async (values: CreateProductRequest) => {
     try {
-      // If no image is set as main, set the first one.
-      const mainCount = values.images.filter(
-        (img: ProductImageInput) => img.isMain
-      ).length;
-      if (mainCount === 0 && values.images.length > 0) {
-        values.images = values.images.map(
-          (img: ProductImageInput, idx: number) => ({
-            ...img,
-            isMain: idx === 0,
-          })
-        );
-      }
-
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -311,7 +282,7 @@ export function CreateProductForm({
           </CardHeader>
           <CardContent className="space-y-3">
             {variantFields.map((fieldItem, index) => (
-            <div
+              <div
                 key={fieldItem.id}
                 className="grid gap-x-3 gap-y-4 md:grid-cols-5 rounded-lg border p-3"
               >
@@ -448,12 +419,12 @@ export function CreateProductForm({
                               json.url,
                               { shouldDirty: true, shouldValidate: true }
                             );
-                             setImageMeta((prev) => ({
+                            setImageMeta((prev) => ({
                               ...prev,
                               [id]: {
                                 ...prev[id],
                                 uploading: false,
-                                uploadedUrl: json.url
+                                uploadedUrl: json.url,
                               },
                             }));
                             toast.success(`Variant image uploaded`);
@@ -468,7 +439,8 @@ export function CreateProductForm({
                       />
                     </FormControl>
                     <FormMessage />
-                     {imageMeta[`variant-${fieldItem.id}`]?.preview || form.watch(`variants.${index}.imageUrl`) ? (
+                    {imageMeta[`variant-${fieldItem.id}`]?.preview ||
+                    form.watch(`variants.${index}.imageUrl`) ? (
                       <div className="flex items-center gap-3 mt-2">
                         <img
                           src={
@@ -478,8 +450,9 @@ export function CreateProductForm({
                           alt="Variant preview"
                           className="h-12 w-12 rounded object-cover border"
                         />
-                         <div className="text-xs text-muted-foreground">
-                          {imageMeta[`variant-${fieldItem.id}`]?.fileName || 'Uploaded'}
+                        <div className="text-xs text-muted-foreground">
+                          {imageMeta[`variant-${fieldItem.id}`]?.fileName ||
+                            "Uploaded"}
                         </div>
                         {imageMeta[`variant-${fieldItem.id}`]?.uploading && (
                           <div className="text-xs">Uploading...</div>
@@ -498,157 +471,7 @@ export function CreateProductForm({
           </CardContent>
         </Card>
 
-        {/* Images */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <CardTitle>Images</CardTitle>
-                <CardDescription>
-                  Add images and choose one as the main image.
-                </CardDescription>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  appendImage({
-                    imageUrl: "",
-                    isMain: imageFields.length === 0,
-                  })
-                }
-              >
-                Add Image
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {imageFields.map((fieldItem, index) => (
-              <div
-                key={fieldItem.id}
-                className="grid items-end gap-3 md:grid-cols-5"
-              >
-                <FormItem className="md:col-span-3 space-y-2">
-                  <FormLabel>Upload Image</FormLabel>
-                  <FormControl>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        const id = fieldItem.id;
-                        // Prepare local preview so it "stays" visible
-                        const preview = URL.createObjectURL(file);
-                        setImageMeta((prev) => ({
-                          ...prev,
-                          [id]: {
-                            ...prev[id],
-                            fileName: file.name,
-                            preview,
-                            uploading: true,
-                          },
-                        }));
-                        const data = new FormData();
-                        data.append("file", file);
-                        try {
-                          const res = await fetch("/api/upload", {
-                            method: "POST",
-                            body: data,
-                          });
-                          if (!res.ok) {
-                            const err = await res.json().catch(() => ({}));
-                            throw new Error(
-                              err?.error || `Upload failed (${res.status})`
-                            );
-                          }
-                          const json = await res.json();
-                          // Update only the imageUrl field to avoid remounting row
-                          form.setValue(`images.${index}.imageUrl`, json.url, {
-                            shouldDirty: true,
-                          });
-                          setImageMeta((prev) => ({
-                            ...prev,
-                            [id]: {
-                              ...prev[id],
-                              uploadedUrl: json.url,
-                              uploading: false,
-                            },
-                          }));
-                          toast.success("Image uploaded");
-                        } catch (err: any) {
-                          setImageMeta((prev) => ({
-                            ...prev,
-                            [id]: { ...prev[id], uploading: false },
-                          }));
-                          toast.error(err?.message ?? "Upload failed");
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  {/* Show a small preview and filename so the image "stays" visible */}
-                  {imageMeta[fieldItem.id]?.preview ||
-                  form.watch(`images.${index}.imageUrl`) ? (
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={
-                          imageMeta[fieldItem.id]?.preview ||
-                          form.watch(`images.${index}.imageUrl`)
-                        }
-                        alt="preview"
-                        className="h-12 w-12 rounded object-cover border"
-                      />
-                      <div className="text-xs text-muted-foreground">
-                        {imageMeta[fieldItem.id]?.fileName || "Uploaded"}
-                      </div>
-                      {imageMeta[fieldItem.id]?.uploading && (
-                        <div className="text-xs">Uploading...</div>
-                      )}
-                    </div>
-                  ) : null}
-                </FormItem>
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="main-image"
-                      className="h-4 w-4 accent-primary"
-                      checked={form.watch(`images.${index}.isMain`) || false}
-                      onChange={() => setMainImage(index)}
-                    />
-                    Main
-                  </label>
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      const id = fieldItem.id;
-                      const meta = imageMeta[id];
-                      if (meta?.preview) URL.revokeObjectURL(meta.preview);
-                      setImageMeta((prev) => {
-                        const next = { ...prev };
-                        delete next[id];
-                        return next;
-                      });
-                      removeImage(index);
-                    }}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            ))}
-            {imageFields.length === 0 && (
-              <div className="text-sm text-muted-foreground">
-                No images added yet. Add at least one image.
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Product-level images removed: images are owned by variants (variant.imageUrl) */}
 
         <div className="flex justify-end gap-2">
           {onCancel && (

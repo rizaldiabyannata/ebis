@@ -39,8 +39,8 @@ export default function ProductEditPage({
         price: number;
         stock: number;
         sku: string;
+        imageUrl?: string | null;
       }[],
-      imageUrls: [] as string[],
     },
   });
 
@@ -48,6 +48,18 @@ export default function ProductEditPage({
     control: form.control,
     name: "variants",
   });
+
+  const [imageMeta, setImageMeta] = useState<
+    Record<
+      string,
+      {
+        fileName?: string;
+        preview?: string;
+        uploadedUrl?: string;
+        uploading?: boolean;
+      }
+    >
+  >({});
 
   useEffect(() => {
     (async () => {
@@ -67,15 +79,14 @@ export default function ProductEditPage({
             price: Number(v.price),
             stock: v.stock,
             sku: v.sku,
+            imageUrl: v.imageUrl ?? null,
           })),
-          imageUrls: data.images?.map((img: any) => img.imageUrl) ?? [],
         };
         setProduct(mapped as Product);
         form.reset({
           name: mapped.name,
           description: mapped.description,
           variants: mapped.variants,
-          imageUrls: mapped.imageUrls,
         });
       } catch (e: any) {
         setErr(e?.message ?? "Unknown error");
@@ -98,11 +109,9 @@ export default function ProductEditPage({
         body: JSON.stringify({
           name: values.name,
           description: values.description,
+          // Variants now own images; send the variants array directly. The
+          // API will replace existing variants when provided.
           variants: values.variants,
-          images: values.imageUrls.map((url: string, index: number) => ({
-            imageUrl: url,
-            isMain: index === 0,
-          })),
         }),
       });
       if (!res.ok) throw new Error("Failed to save product");
@@ -255,67 +264,124 @@ export default function ProductEditPage({
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                      {/* Variant image upload */}
+                      <div className="md:col-span-5">
+                        {/** compute meta id so we can keep previews across renders */}
+                        {(() => {
+                          const metaId = `variant-${field.id}`;
+                          return (
+                            <FormField
+                              control={form.control}
+                              name={`variants.${index}.imageUrl`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    Variant Image (Optional)
+                                  </FormLabel>
+                                  <FormControl>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        const preview =
+                                          URL.createObjectURL(file);
+                                        setImageMeta((prev) => ({
+                                          ...prev,
+                                          [metaId]: {
+                                            ...prev[metaId],
+                                            fileName: file.name,
+                                            preview,
+                                            uploading: true,
+                                          },
+                                        }));
+                                        const data = new FormData();
+                                        data.append("file", file);
+                                        try {
+                                          const res = await fetch(
+                                            "/api/upload",
+                                            {
+                                              method: "POST",
+                                              body: data,
+                                            }
+                                          );
+                                          if (!res.ok)
+                                            throw new Error("Upload failed");
+                                          const json = await res.json();
+                                          form.setValue(
+                                            `variants.${index}.imageUrl`,
+                                            json.url,
+                                            {
+                                              shouldDirty: true,
+                                              shouldValidate: true,
+                                            }
+                                          );
+                                          setImageMeta((prev) => ({
+                                            ...prev,
+                                            [metaId]: {
+                                              ...prev[metaId],
+                                              uploadedUrl: json.url,
+                                              uploading: false,
+                                            },
+                                          }));
+                                          toast.success(
+                                            `Variant image uploaded`
+                                          );
+                                        } catch (err) {
+                                          setImageMeta((prev) => ({
+                                            ...prev,
+                                            [metaId]: {
+                                              ...prev[metaId],
+                                              uploading: false,
+                                            },
+                                          }));
+                                          toast.error(
+                                            `Upload failed: ${String(err)}`
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  </FormControl>
+                                  {imageMeta[metaId]?.preview ??
+                                  form.watch(
+                                    `variants.${index}.imageUrl` as const
+                                  ) ??
+                                  "" ? (
+                                    <div className="flex items-center gap-3 mt-2">
+                                      <img
+                                        src={String(
+                                          imageMeta[metaId]?.preview ??
+                                            form.watch(
+                                              `variants.${index}.imageUrl` as const
+                                            ) ??
+                                            ""
+                                        )}
+                                        alt="Variant preview"
+                                        className="h-12 w-12 rounded object-cover border"
+                                      />
+                                      <div className="text-xs text-muted-foreground">
+                                        {imageMeta[metaId]?.fileName ||
+                                          "Uploaded"}
+                                      </div>
+                                      {imageMeta[metaId]?.uploading && (
+                                        <div className="text-xs">
+                                          Uploading...
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : null}
+                                </FormItem>
+                              )}
+                            />
+                          );
+                        })()}
+                      </div>
                     </div>
                   ))}
                 </CardContent>
               </Card>
-              <FormField
-                control={form.control}
-                name="imageUrls"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Images</FormLabel>
-                    <FormControl>
-                      <div className="space-y-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={(e) => {
-                            const files = e.target.files
-                              ? Array.from(e.target.files)
-                              : [];
-                            const objectUrls = files.map((f) =>
-                              URL.createObjectURL(f)
-                            );
-                            const merged = [...field.value, ...objectUrls];
-                            field.onChange(merged);
-                          }}
-                        />
-                        {field.value?.length > 0 && (
-                          <div className="grid grid-cols-3 gap-3">
-                            {field.value.map((url: string, index: number) => (
-                              <div
-                                key={index}
-                                className="group relative rounded-md overflow-hidden border"
-                              >
-                                <img
-                                  src={url}
-                                  alt={`Image ${index + 1}`}
-                                  className="h-28 w-full object-cover"
-                                />
-                                <button
-                                  type="button"
-                                  className="absolute top-1 right-1 inline-flex items-center justify-center rounded bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 text-[11px]"
-                                  onClick={() => {
-                                    const filtered = field.value.filter(
-                                      (_: string, i: number) => i !== index
-                                    );
-                                    field.onChange(filtered);
-                                  }}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Variant images are handled per-variant in the variants list below. Product-level images removed. */}
               <div className="flex justify-end gap-2 mt-6">
                 <Button
                   type="button"

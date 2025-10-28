@@ -39,6 +39,7 @@ type ApiProduct = {
     sku: string;
     price: number;
     stock: number;
+    imageUrl?: string | null;
   }[];
 };
 
@@ -64,8 +65,11 @@ export default function ProductsPage() {
         id: p.id,
         name: p.name,
         description: p.description,
+        // Use variant images (if any) as product image list. Prefer first variant if available.
         imageUrls:
-          p.images.length > 0 ? p.images.map((img) => img.imageUrl) : [],
+          p.variants && p.variants.length > 0
+            ? (p.variants.map((v) => v.imageUrl).filter(Boolean) as string[])
+            : [],
         variants: p.variants.map((v) => ({
           id: v.id,
           name: v.name,

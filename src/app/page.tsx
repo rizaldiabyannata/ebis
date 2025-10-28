@@ -108,7 +108,15 @@ export default async function Home() {
                 ></Link>
                 <div className="relative aspect-square w-full">
                   <Image
-                    src={product.images[0]?.imageUrl || "/logo.png"}
+                    src={
+                      (
+                        product as unknown as {
+                          variants?: { imageUrl?: string | null }[];
+                        }
+                      ).variants?.[0]?.imageUrl ||
+                      product.images?.[0]?.imageUrl ||
+                      "/logo.png"
+                    }
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"

@@ -130,30 +130,75 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ error: 'Invalid request', details: issues }, { status: 400 });
     }
 
-        const { name, description, categoryId } = parsed.data;
+    const { name, description, categoryId, variants } = parsed.data as {
+      name?: string;
+      description?: string;
+      categoryId?: string;
+      variants?: any[];
+    };
 
-        if (categoryId) {
-            const category = await prisma.category.findUnique({ where: { id: categoryId } });
-            if (!category) {
-                return NextResponse.json({ error: `Category with ID ${categoryId} not found` }, { status: 404 });
-            }
+    if (categoryId) {
+      const category = await prisma.category.findUnique({ where: { id: categoryId } });
+      if (!category) {
+        return NextResponse.json({ error: `Category with ID ${categoryId} not found` }, { status: 404 });
+      }
+    }
+
+    // Perform update within a transaction. If variants are provided,
+    // replace existing variants for the product with the provided list.
+    if (variants && Array.isArray(variants)) {
+      // Simple strategy: remove existing variants for product, then create new ones.
+      await prisma.$transaction(async (tx) => {
+        await tx.productVariant.deleteMany({ where: { productId: id } });
+        if (variants.length > 0) {
+          // createMany doesn't return created records; we'll refetch later.
+          await tx.productVariant.createMany({
+            data: variants.map((v) => ({
+              name: v.name,
+              sku: v.sku,
+              price: v.price,
+              stock: v.stock,
+              imageUrl: v.imageUrl ?? null,
+              productId: id,
+            })),
+          });
         }
-
-        const updatedProduct = await prisma.product.update({
-            where: { id },
-            data: {
-                name,
-                description,
-                categoryId,
-            },
-            include: {
-                category: true,
-                variants: true,
-                images: true,
-            }
+        await tx.product.update({
+          where: { id },
+          data: {
+            name,
+            description,
+            categoryId,
+          },
         });
+      });
+    } else {
+      // No variants provided; just update product fields.
+      await prisma.product.update({
+        where: { id },
+        data: {
+          name,
+          description,
+          categoryId,
+        },
+      });
+    }
 
-        return NextResponse.json(updatedProduct);
+    // Refetch the product with relations for response
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        variants: true,
+        images: true,
+      },
+    });
+
+    if (!updatedProduct) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedProduct);
     } catch (error) {
         if (error.code === 'P2025') {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
