@@ -1,14 +1,14 @@
 "use client";
 
-import { useCart } from '@/contexts/CartContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useCart } from "@/contexts/CartContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const CheckoutSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 huruf"),
@@ -32,7 +32,10 @@ export default function CheckoutForm() {
     },
   });
 
-  const subtotal = cartItems.reduce((acc, item) => acc + item.variant.price * item.quantity, 0);
+  const subtotal: number = cartItems.reduce<number>(
+    (acc, item) => acc + Number(item.variant.price) * Number(item.quantity),
+    0
+  );
 
   async function onSubmit(values: CheckoutForm) {
     try {
@@ -69,12 +72,11 @@ export default function CheckoutForm() {
         description: `Nomor Pesanan Anda: ${result.orderNumber}`,
       });
       clearCart();
-      router.push('/shop/thank-you');
+      router.push("/shop/thank-you");
     } catch (error) {
       toast.error("Gagal Membuat Pesanan", {
         description:
-          (error as Error).message ||
-          "Terjadi kesalahan. Silakan coba lagi.",
+          (error as Error).message || "Terjadi kesalahan. Silakan coba lagi.",
       });
     }
   }
@@ -84,13 +86,20 @@ export default function CheckoutForm() {
       <div>
         <h2 className="text-2xl font-bold mb-4">Ringkasan Pesanan</h2>
         <div className="space-y-4">
-          {cartItems.map(item => (
+          {cartItems.map((item) => (
             <div key={item.variant.id} className="flex justify-between">
               <div>
-                <p className="font-semibold">{item.product.name} ({item.variant.name})</p>
+                <p className="font-semibold">
+                  {item.product.name} ({item.variant.name})
+                </p>
                 <p className="text-sm text-gray-500">Jumlah: {item.quantity}</p>
               </div>
-              <p>Rp{(item.variant.price * item.quantity).toLocaleString()}</p>
+              <p>
+                Rp
+                {(
+                  Number(item.variant.price) * Number(item.quantity)
+                ).toLocaleString()}
+              </p>
             </div>
           ))}
         </div>
