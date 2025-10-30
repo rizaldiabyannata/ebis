@@ -29,6 +29,22 @@ services:
   #   depends_on:
   #     postgres:
   #       condition: service_healthy
+  whatsapp:
+    image: aldinokemal2104/go-whatsapp-web-multidevice
+    # avoid conflicting with an existing container named "whatsapp"
+    container_name: hepibite-whatsapp
+    restart: always
+    ports:
+      - "3002:3002"
+    volumes:
+      - whatsapp:/app/storages
+    environment:
+      APP_BASIC_AUTH : ${GOWA_ADMIN}:${GOWA_PASSWORD}
+      APP_PORT : ${GOWA_PORT}
+      APP_DEBUG : true
+      APP_OS : Chrome
+      APP_ACCOUNT_VALIDATION : false
 
 volumes:
   db_data:
+  whatsapp:
