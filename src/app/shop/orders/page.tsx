@@ -1,75 +1,34 @@
-export const dynamic = "force-dynamic";
+"use client";
 
 import SiteHeader from "@/components/SiteHeader";
-import prisma from "@/lib/prisma";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import OrdersTable from "@/components/OrdersTable";
+import { useOrders } from "@/hooks/useOrders";
+import { Skeleton } from "@/components/ui/skeleton";
 
-async function getOrders() {
-  const orders = await prisma.order.findMany({
-    include: {
-      delivery: true,
-    },
-    orderBy: {
-      orderDate: "desc",
-    },
-  });
-  return orders;
-}
-
-export default async function OrdersPage() {
-  const orders = await getOrders();
+export default function OrdersPage() {
+  const { orders, isLoading, error } = useOrders();
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">Daftar Pesanan</h1>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID Pesanan</TableHead>
-                <TableHead>Waktu Pemesanan</TableHead>
-                <TableHead>Status Pesanan</TableHead>
-                <TableHead>Status Pengiriman</TableHead>
-                <TableHead>Pengirim</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">
-                    {order.orderNumber}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(order.orderDate).toLocaleString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{order.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {order.delivery ? (
-                      <Badge variant="secondary">{order.delivery.status}</Badge>
-                    ) : (
-                      "N/A"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {order.delivery ? order.delivery.driverName : "N/A"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        {isLoading ? (
+          <div className="rounded-md border">
+            <div className="p-4">
+              <Skeleton className="h-8 w-1/2 mb-4" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+        ) : error ? (
+          <div className="text-red-500">
+            Terjadi kesalahan: {error.message}
+          </div>
+        ) : (
+          <OrdersTable orders={orders} />
+        )}
       </main>
     </div>
   );
