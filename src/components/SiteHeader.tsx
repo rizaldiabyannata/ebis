@@ -6,9 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
+import Cart from "./Cart";
 
 export default function SiteHeader() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -47,6 +49,10 @@ export default function SiteHeader() {
                     <Button className="hidden sm:inline-flex bg-amber-500 hover:bg-amber-600 text-white" asChild>
                         <Link href="/register">Sign Up</Link>
                     </Button>
+
+                    <div onClick={() => setIsCartOpen(!isCartOpen)}>
+                        <Cart isOpen={isCartOpen} />
+                    </div>
 
                     <ModeToggle />
 

@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteHeader from "@/components/SiteHeader";
+import { useCart } from "@/contexts/CartContext";
 
 type ProductWithRelations = Product & {
   variants: ProductVariant[];
@@ -23,6 +24,7 @@ function EcommercePageContent() {
   const [variantIndex, setVariantIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const searchParams = useSearchParams();
+  const { addToCart } = useCart();
 
   // Fetch data from API
   useEffect(() => {
@@ -77,6 +79,12 @@ function EcommercePageContent() {
       (productIndex + newDirection + products.length) % products.length;
     setProductIndex(newIndex);
     setVariantIndex(0);
+  };
+
+  const handleAddToCart = () => {
+    if (currentProduct && currentVariant) {
+      addToCart(currentProduct, currentVariant, 1);
+    }
   };
 
   if (isLoading) {
@@ -236,14 +244,10 @@ function EcommercePageContent() {
                     <Button
                       size="lg"
                       className="mt-8 rounded-full px-8 py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105"
-                      asChild
+                      onClick={handleAddToCart}
                     >
-                      <Link
-                        href={`/shop/checkout?variantId=${currentVariant.id}`}
-                      >
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Pesan Sekarang
-                      </Link>
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      Add to Cart
                     </Button>
                   </motion.div>
 
