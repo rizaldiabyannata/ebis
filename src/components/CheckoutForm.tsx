@@ -4,6 +4,13 @@ import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,84 +89,125 @@ export default function CheckoutForm() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Ringkasan Pesanan</h2>
-        <div className="space-y-4">
-          {cartItems.map((item) => (
-            <div key={item.variant.id} className="flex justify-between">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card className="order-2 md:order-1">
+        <CardHeader>
+          <CardTitle>Ringkasan Pesanan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {cartItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Keranjang kosong</p>
+            ) : (
+              cartItems.map((item) => (
+                <div
+                  key={item.variant.id}
+                  className="flex items-start justify-between gap-4 border-b pb-3"
+                >
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{item.product.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.variant.name} • Jumlah: {item.quantity}
+                    </p>
+                  </div>
+                  <div className="text-sm font-semibold">
+                    Rp
+                    {(
+                      Number(item.variant.price) * Number(item.quantity)
+                    ).toLocaleString()}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="flex-col items-stretch gap-3">
+          <div className="w-full flex justify-between text-sm text-muted-foreground">
+            <span>Subtotal</span>
+            <span>Rp{subtotal.toLocaleString()}</span>
+          </div>
+          <div className="w-full flex justify-between text-sm text-muted-foreground">
+            <span>Biaya Pengiriman</span>
+            <span>Rp{(subtotal > 0 ? 10000 : 0).toLocaleString()}</span>
+          </div>
+          <div className="w-full flex justify-between font-bold text-lg">
+            <span>Total</span>
+            <span>
+              Rp{(subtotal + (subtotal > 0 ? 10000 : 0)).toLocaleString()}
+            </span>
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="order-1 md:order-2">
+        <CardHeader>
+          <CardTitle>Form Pemesanan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="font-semibold">
-                  {item.product.name} ({item.variant.name})
-                </p>
-                <p className="text-sm text-gray-500">Jumlah: {item.quantity}</p>
+                <Label>Nama Lengkap</Label>
+                <Input placeholder="Nama Anda" {...form.register("name")} />
+                {form.formState.errors.name && (
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.name.message as string}
+                  </p>
+                )}
               </div>
-              <p>
-                Rp
-                {(
-                  Number(item.variant.price) * Number(item.quantity)
-                ).toLocaleString()}
-              </p>
+              <div>
+                <Label>No. Telepon/WA</Label>
+                <Input placeholder="08xxxxxxxxxx" {...form.register("phone")} />
+                {form.formState.errors.phone && (
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.phone.message as string}
+                  </p>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="flex justify-between font-bold mt-4">
-          <p>Subtotal</p>
-          <p>Rp{subtotal.toLocaleString()}</p>
-        </div>
-      </div>
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Form Pemesanan</h2>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label>Nama Lengkap</Label>
-            <Input placeholder="Nama Anda" {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.name.message as string}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label>No. Telepon/WA</Label>
-            <Input placeholder="08xxxxxxxxxx" {...form.register("phone")} />
-            {form.formState.errors.phone && (
-              <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.phone.message as string}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label>Alamat</Label>
-            <Input
-              placeholder="Alamat lengkap pengiriman"
-              {...form.register("address")}
-            />
-            {form.formState.errors.address && (
-              <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.address.message as string}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="paymentMethod">Metode Pembayaran</Label>
-            <select
-              id="paymentMethod"
-              className="h-10 w-full rounded-md border px-3 bg-background mt-2"
-              {...form.register("paymentMethod")}
+
+            <div>
+              <Label>Alamat</Label>
+              <Input
+                placeholder="Alamat lengkap pengiriman"
+                {...form.register("address")}
+              />
+              {form.formState.errors.address && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.address.message as string}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="paymentMethod">Metode Pembayaran</Label>
+              <select
+                id="paymentMethod"
+                className="h-10 w-full rounded-md border px-3 bg-background mt-2"
+                {...form.register("paymentMethod")}
+              >
+                <option value="COD">Cash on Delivery (COD)</option>
+                <option value="BANK_TRANSFER">Transfer Bank</option>
+              </select>
+              {form.formState.errors.paymentMethod && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.paymentMethod.message as string}
+                </p>
+              )}
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <div className="w-full flex justify-end">
+            <Button
+              onClick={() => form.handleSubmit(onSubmit)()}
+              disabled={cartItems.length === 0}
             >
-              <option value="COD">Cash on Delivery (COD)</option>
-              <option value="BANK_TRANSFER">Transfer Bank</option>
-            </select>
-            {form.formState.errors.paymentMethod && (
-              <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.paymentMethod.message as string}
-              </p>
-            )}
+              Kirim Pesanan
+            </Button>
           </div>
-          <Button type="submit">Kirim Pesanan</Button>
-        </form>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -17,14 +18,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +35,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   Sheet,
   SheetContent,
@@ -42,12 +43,12 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetDescription,
-} from '@/components/ui/sheet';
-import { CreatePartnerForm } from '@/components/admin/create-partner-form';
-import { EditPartnerForm } from '@/components/admin/edit-partner-form';
-import { MoreHorizontal, PlusIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+} from "@/components/ui/sheet";
+import { CreatePartnerForm } from "@/components/admin/create-partner-form";
+import { EditPartnerForm } from "@/components/admin/edit-partner-form";
+import { MoreHorizontal, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Partner {
   id: string;
@@ -67,22 +68,24 @@ export default function PartnersPage() {
     if (!deletingPartner) return;
     try {
       const res = await fetch(`/api/partners/${deletingPartner.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Failed to delete partner (${res.status})`);
+        throw new Error(
+          err.error || `Failed to delete partner (${res.status})`
+        );
       }
-      toast.success('Partner deleted successfully');
+      toast.success("Partner deleted successfully");
       setDeletingPartner(null);
       fetchPartners();
     } catch (e: any) {
-      toast.error(e.message || 'Failed to delete partner');
+      toast.error(e.message || "Failed to delete partner");
     }
   };
 
   const fetchPartners = useCallback(async () => {
-    const res = await fetch('/api/partners');
+    const res = await fetch("/api/partners");
     const data = await res.json();
     setPartners(data);
   }, []);
@@ -116,15 +119,19 @@ export default function PartnersPage() {
                   {partners.map((partner) => (
                     <TableRow
                       key={partner.id}
-                      onClick={() => router.push(`/admin/partners/${partner.id}`)}
+                      onClick={() =>
+                        router.push(`/admin/partners/${partner.id}`)
+                      }
                       className="cursor-pointer"
                     >
                       <TableCell>
                         {partner.imageUrl && (
-                          <img
+                          <Image
                             src={partner.imageUrl}
                             alt={partner.name}
-                            className="h-10 w-10 rounded-full object-cover"
+                            width={40}
+                            height={40}
+                            className="rounded-full object-cover"
                           />
                         )}
                       </TableCell>
@@ -212,7 +219,7 @@ export default function PartnersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-       <Sheet
+      <Sheet
         open={!!editingPartner}
         onOpenChange={(open) => !open && setEditingPartner(null)}
       >

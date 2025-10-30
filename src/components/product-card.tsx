@@ -42,15 +42,19 @@ interface ProductCardProps {
   product: Product;
   isAdmin?: boolean;
   onDelete?: (productId: string) => void;
+  onEdit?: (productId: string) => void;
 }
 
 export function ProductCard({
   product,
   isAdmin = false,
   onDelete,
+  onEdit,
 }: ProductCardProps) {
   if (isAdmin) {
-    return <AdminProductCard product={product} onDelete={onDelete} />;
+    return (
+      <AdminProductCard product={product} onDelete={onDelete} onEdit={onEdit} />
+    );
   }
 
   return <UserProductCard product={product} />;
@@ -93,9 +97,11 @@ function UserProductCard({ product }: { product: Product }) {
 function AdminProductCard({
   product,
   onDelete,
+  onEdit,
 }: {
   product: Product;
   onDelete?: (productId: string) => void;
+  onEdit?: (productId: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -150,7 +156,11 @@ function AdminProductCard({
             ))}
           </div>
         )}
-        <AdminControls productId={product.id} onDelete={handleDelete} />
+        <AdminControls
+          productId={product.id}
+          onDelete={handleDelete}
+          onEdit={onEdit}
+        />
       </CardFooter>
     </Card>
   );
@@ -159,17 +169,22 @@ function AdminProductCard({
 function AdminControls({
   productId,
   onDelete,
+  onEdit,
 }: {
   productId: string;
   onDelete: () => void;
+  onEdit?: (id: string) => void;
 }) {
   return (
     <div className="flex w-full items-center justify-between gap-2">
       <Button asChild variant="outline" className="flex-1">
         <Link href={`/products/${productId}`}>Preview</Link>
       </Button>
-      <Button asChild className="flex-1 dark:text-white">
-        <Link href={`/admin/products/${productId}/edit`}>Update</Link>
+      <Button
+        className="flex-1 dark:text-white"
+        onClick={() => onEdit && onEdit(productId)}
+      >
+        Update
       </Button>
       <AlertDialog>
         <AlertDialogTrigger asChild>

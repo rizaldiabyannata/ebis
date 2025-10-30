@@ -18,6 +18,7 @@ import { Trash2 } from "lucide-react";
 import { Product } from "@/components/product-card";
 import { toast } from "sonner";
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
+import Image from "next/image";
 
 export default function ProductEditPage({
   params,
@@ -349,17 +350,40 @@ export default function ProductEditPage({
                                   ) ??
                                   "" ? (
                                     <div className="flex items-center gap-3 mt-2">
-                                      <img
-                                        src={String(
+                                      {(() => {
+                                        const src =
                                           imageMeta[metaId]?.preview ??
-                                            form.watch(
-                                              `variants.${index}.imageUrl` as const
-                                            ) ??
-                                            ""
-                                        )}
-                                        alt="Variant preview"
-                                        className="h-12 w-12 rounded object-cover border"
-                                      />
+                                          form.watch(
+                                            `variants.${index}.imageUrl` as const
+                                          ) ??
+                                          "";
+                                        if (!src) return null;
+                                        if (
+                                          typeof src === "string" &&
+                                          (src.startsWith("blob:") ||
+                                            src.startsWith("data:"))
+                                        ) {
+                                          return (
+                                            <>
+                                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                                              <img
+                                                src={String(src)}
+                                                alt="Variant preview"
+                                                className="h-12 w-12 rounded object-cover border"
+                                              />
+                                            </>
+                                          );
+                                        }
+                                        return (
+                                          <Image
+                                            src={String(src)}
+                                            alt="Variant preview"
+                                            width={48}
+                                            height={48}
+                                            className="rounded object-cover border"
+                                          />
+                                        );
+                                      })()}
                                       <div className="text-xs text-muted-foreground">
                                         {imageMeta[metaId]?.fileName ||
                                           "Uploaded"}

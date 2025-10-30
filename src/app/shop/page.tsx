@@ -12,9 +12,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SiteHeader from "@/components/SiteHeader";
 import { useCart } from "@/contexts/CartContext";
 
+type VariantWithImage = ProductVariant & { imageUrl?: string | null };
+type ImageRecord = ProductImage & { imageUrl: string };
+
 type ProductWithRelations = Product & {
-  variants: ProductVariant[];
-  images: ProductImage[];
+  variants: VariantWithImage[];
+  images: ImageRecord[];
 };
 
 function EcommercePageContent() {
@@ -34,8 +37,14 @@ function EcommercePageContent() {
         if (!response.ok) throw new Error("Gagal mengambil data produk");
         const data: ProductWithRelations[] = await response.json();
 
+        // Consider a product valid if it has variants and at least one of:
+        // - a variant with an imageUrl
+        // - or the product has images (legacy or fallback)
         const validProducts = data.filter(
-          (p) => p.variants.length > 0 && p.variants.some((v) => !!v.imageUrl)
+          (p) =>
+            p.variants.length > 0 &&
+            (p.variants.some((v) => !!(v as VariantWithImage).imageUrl) ||
+              (p.images && p.images.length > 0))
         );
         setProducts(validProducts);
 
@@ -63,13 +72,44 @@ function EcommercePageContent() {
   const currentVariant = useMemo(() => {
     if (!currentProduct) return null;
     const variant = currentProduct.variants[variantIndex];
-    // Prefer variant image; otherwise fall back to first variant image if present
-    const fallbackImage = currentProduct.variants.find(
-      (v) => !!v.imageUrl
-    )?.imageUrl;
+
+    // Helper: try to find the best image URL for the given variant.
+    const findImageForVariant = (v: VariantWithImage) => {
+      // 1) Variant-level imageUrl (preferred)
+      if (v.imageUrl) return v.imageUrl;
+
+      // 2) Try to match product images by SKU appearing in the filename/path
+      if (currentProduct.images && currentProduct.images.length > 0) {
+        const bySku = currentProduct.images.find(
+          (img) =>
+            typeof img.imageUrl === "string" &&
+            v.sku &&
+            img.imageUrl.includes(v.sku)
+        );
+        if (bySku) return bySku.imageUrl;
+
+        // 3) Try to match by variant name (loose match)
+        const nameToken = String(v.name || "")
+          .toLowerCase()
+          .replace(/\s+/g, "-");
+        const byName = currentProduct.images.find(
+          (img) =>
+            typeof img.imageUrl === "string" &&
+            nameToken &&
+            img.imageUrl.toLowerCase().includes(nameToken)
+        );
+        if (byName) return byName.imageUrl;
+
+        // 4) Fallback to the first product image
+        return currentProduct.images[0].imageUrl;
+      }
+
+      return null;
+    };
+
     return {
       ...variant,
-      imageUrl: variant?.imageUrl || fallbackImage || null,
+      imageUrl: findImageForVariant(variant) ?? null,
     };
   }, [currentProduct, variantIndex]);
 

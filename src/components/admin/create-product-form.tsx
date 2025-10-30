@@ -27,6 +27,7 @@ import {
   ProductVariantInput,
 } from "@/lib/validation";
 import { toast } from "sonner";
+import Image from "next/image";
 
 // --- Currency & numeric helpers ---
 const formatRupiah = (value: number) =>
@@ -50,9 +51,14 @@ type Partner = { id: string; name: string };
 export function CreateProductForm({
   onSuccess,
   onCancel,
+  initialValues,
+  productId,
 }: {
   onSuccess?: (createdId: string) => void;
   onCancel?: () => void;
+  /** If provided, the form will act in edit mode and submit to PUT /api/products/{productId} */
+  initialValues?: Partial<CreateProductRequest>;
+  productId?: string;
 }) {
   const [categories, setCategories] = React.useState<Category[]>([]);
   const [partners, setPartners] = React.useState<Partner[]>([]);
@@ -62,14 +68,25 @@ export function CreateProductForm({
   // Prepare form with Zod validation
   const form = useForm<CreateProductRequest>({
     resolver: zodResolver(createProductSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      categoryId: "",
-      variants: [
-        { name: "", sku: "", price: 0, stock: 0 },
-      ] as ProductVariantInput[],
-    },
+    defaultValues: initialValues
+      ? {
+          name: initialValues.name ?? "",
+          description: initialValues.description ?? "",
+          categoryId: initialValues.categoryId ?? "",
+          partnerId: initialValues.partnerId ?? undefined,
+          variants:
+            initialValues.variants && initialValues.variants.length > 0
+              ? (initialValues.variants as ProductVariantInput[])
+              : [{ name: "", sku: "", price: 0, stock: 0 }],
+        }
+      : {
+          name: "",
+          description: "",
+          categoryId: "",
+          variants: [
+            { name: "", sku: "", price: 0, stock: 0 },
+          ] as ProductVariantInput[],
+        },
     mode: "onChange",
   });
 
@@ -130,23 +147,34 @@ export function CreateProductForm({
 
   const onSubmit = async (values: CreateProductRequest) => {
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const url = productId ? `/api/products/${productId}` : "/api/products";
+      const method = productId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(
-          err?.error || `Failed to create product (${res.status})`
+          err?.error ||
+            `Failed to ${productId ? "update" : "create"} product (${
+              res.status
+            })`
         );
       }
       const created = await res.json();
-      toast.success("Product created successfully");
-      onSuccess?.(created.id);
-      form.reset();
+      toast.success(
+        productId
+          ? "Product updated successfully"
+          : "Product created successfully"
+      );
+      onSuccess?.(created.id ?? productId ?? "");
+      if (!productId) form.reset();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to create product");
+      toast.error(
+        e?.message ?? `Failed to ${productId ? "update" : "create"} product`
+      );
     }
   };
 
@@ -442,14 +470,37 @@ export function CreateProductForm({
                     {imageMeta[`variant-${fieldItem.id}`]?.preview ||
                     form.watch(`variants.${index}.imageUrl`) ? (
                       <div className="flex items-center gap-3 mt-2">
-                        <img
-                          src={
+                        {(() => {
+                          const src =
                             imageMeta[`variant-${fieldItem.id}`]?.preview ||
-                            form.watch(`variants.${index}.imageUrl`)
+                            form.watch(`variants.${index}.imageUrl`);
+                          if (!src) return null;
+                          // next/image doesn't support blob/data urls, use native <img> for those
+                          if (
+                            typeof src === "string" &&
+                            (src.startsWith("blob:") || src.startsWith("data:"))
+                          ) {
+                            return (
+                              <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={src}
+                                  alt="Variant preview"
+                                  className="h-12 w-12 rounded object-cover border"
+                                />
+                              </>
+                            );
                           }
-                          alt="Variant preview"
-                          className="h-12 w-12 rounded object-cover border"
-                        />
+                          return (
+                            <Image
+                              src={String(src)}
+                              alt="Variant preview"
+                              width={48}
+                              height={48}
+                              className="rounded object-cover border"
+                            />
+                          );
+                        })()}
                         <div className="text-xs text-muted-foreground">
                           {imageMeta[`variant-${fieldItem.id}`]?.fileName ||
                             "Uploaded"}
@@ -479,7 +530,9 @@ export function CreateProductForm({
               Cancel
             </Button>
           )}
-          <Button type="submit">Create Product</Button>
+          <Button type="submit">
+            {productId ? "Save Changes" : "Create Product"}
+          </Button>
         </div>
       </form>
     </Form>

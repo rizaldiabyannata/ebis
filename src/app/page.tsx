@@ -35,7 +35,7 @@ export default async function Home() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative py-20 md:py-32 border-b bg-[#f0ce95] dark:bg-[#a95633] dark:border-white/5">
+        <section className="relative py-20 md:py-32 lg:px-12 border-b bg-[#f0ce95] dark:bg-[#a95633] dark:border-white/5">
           <div className="absolute inset-0 bg-gradient-to-b from-amber-100/50 to-stone-50 dark:from-amber-900/10 dark:to-neutral-950 -z-10"></div>
           <div className="container mx-auto grid md:grid-cols-2 gap-12 px-4 items-center">
             <div className="space-y-5 text-center md:text-left">

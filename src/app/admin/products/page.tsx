@@ -33,6 +33,10 @@ export default function ProductsPage() {
   } = useAdminProducts();
 
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [editingProductId, setEditingProductId] = React.useState<string | null>(
+    null
+  );
+  const [editingInitial, setEditingInitial] = React.useState<any | null>(null);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -68,11 +72,20 @@ export default function ProductsPage() {
                   </SheetHeader>
                   <div className="h-full overflow-auto p-4">
                     <CreateProductForm
+                      key={editingProductId ?? "create"}
                       onSuccess={() => {
                         setCreateOpen(false);
+                        setEditingProductId(null);
+                        setEditingInitial(null);
                         loadProducts();
                       }}
-                      onCancel={() => setCreateOpen(false)}
+                      onCancel={() => {
+                        setCreateOpen(false);
+                        setEditingProductId(null);
+                        setEditingInitial(null);
+                      }}
+                      initialValues={editingInitial ?? undefined}
+                      productId={editingProductId ?? undefined}
                     />
                   </div>
                 </SheetContent>
@@ -141,6 +154,35 @@ export default function ProductsPage() {
               product={product}
               isAdmin={true}
               onDelete={requestDelete}
+              onEdit={async (id: string) => {
+                // load product detail and open sheet in edit mode
+                try {
+                  const res = await fetch(`/api/products/${id}`, {
+                    cache: "no-store",
+                  });
+                  if (!res.ok) throw new Error("Failed to fetch product");
+                  const data = await res.json();
+                  // Map API product to CreateProductRequest shape
+                  const initial = {
+                    name: data.name,
+                    description: data.description,
+                    categoryId: data.categoryId ?? "",
+                    partnerId: data.partnerId ?? undefined,
+                    variants: data.variants.map((v: any) => ({
+                      name: v.name,
+                      sku: v.sku,
+                      price: Number(v.price),
+                      stock: v.stock,
+                      imageUrl: v.imageUrl ?? undefined,
+                    })),
+                  };
+                  setEditingProductId(id);
+                  setEditingInitial(initial);
+                  setCreateOpen(true);
+                } catch (e: any) {
+                  console.error(e);
+                }
+              }}
             />
           ))}
         </div>

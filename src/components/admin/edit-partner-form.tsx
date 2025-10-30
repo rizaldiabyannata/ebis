@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { z } from "zod";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const editPartnerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -116,7 +117,11 @@ export function EditPartnerForm({
                   toast.success("Image uploaded");
                 } catch (err: any) {
                   setImageMeta((prev) => ({ ...prev, uploading: false }));
-                  toast.error(`Upload failed: ${err.message || "An unknown error occurred"}`);
+                  toast.error(
+                    `Upload failed: ${
+                      err.message || "An unknown error occurred"
+                    }`
+                  );
                 }
               }}
             />
@@ -124,11 +129,34 @@ export function EditPartnerForm({
           <FormMessage />
           {imageMeta?.preview || form.watch("imageUrl") ? (
             <div className="mt-2 flex items-center gap-3">
-              <img
-                src={imageMeta?.preview || form.watch("imageUrl")}
-                alt="Partner preview"
-                className="border object-cover rounded h-12 w-12"
-              />
+              {(() => {
+                const src = imageMeta?.preview || form.watch("imageUrl");
+                if (!src) return null;
+                if (
+                  typeof src === "string" &&
+                  (src.startsWith("blob:") || src.startsWith("data:"))
+                ) {
+                  return (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={String(src)}
+                        alt="Partner preview"
+                        className="border object-cover rounded h-12 w-12"
+                      />
+                    </>
+                  );
+                }
+                return (
+                  <Image
+                    src={String(src)}
+                    alt="Partner preview"
+                    width={48}
+                    height={48}
+                    className="border object-cover rounded"
+                  />
+                );
+              })()}
               <div className="text-muted-foreground text-xs">
                 {imageMeta?.fileName || "Uploaded"}
               </div>
