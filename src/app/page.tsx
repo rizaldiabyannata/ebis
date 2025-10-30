@@ -95,52 +95,64 @@ export default async function Home() {
               Pilihan snack terbaik yang paling disukai pelanggan kami.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="group relative border bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col"
-              >
-                <Link
-                  href={`/shop?productId=${product.id}`}
-                  className="absolute inset-0 z-10"
-                  aria-label={product.name}
-                ></Link>
-                <div className="relative aspect-square w-full">
-                  <Image
-                    src={
-                      (
-                        product as unknown as {
-                          variants?: { imageUrl?: string | null }[];
-                        }
-                      ).variants?.[0]?.imageUrl ||
-                      product.images?.[0]?.imageUrl ||
-                      "/logo.png"
-                    }
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-5 flex flex-col flex-grow">
-                  <h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">
-                    {product.name}
-                  </h3>
+          {(() => {
+            const single = products.length === 1;
+            const containerCls = single
+              ? "flex justify-center"
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8";
+            return (
+              <div className={containerCls}>
+                {products.map((product) => (
                   <div
-                    className="text-sm text-stone-500 dark:text-stone-400 mt-1 flex-grow line-clamp-3"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 w-full border-stone-300 dark:border-neutral-700 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-colors"
+                    key={product.id}
+                    className={`group relative border bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col ${
+                      single ? "w-full max-w-md" : ""
+                    }`}
                   >
-                    Lihat Produk
-                  </Button>
-                </div>
+                    <Link
+                      href={`/shop?productId=${product.id}`}
+                      className="absolute inset-0 z-10"
+                      aria-label={product.name}
+                    ></Link>
+                    <div className="relative aspect-square w-full">
+                      <Image
+                        src={
+                          (
+                            product as unknown as {
+                              variants?: { imageUrl?: string | null }[];
+                            }
+                          ).variants?.[0]?.imageUrl ||
+                          product.images?.[0]?.imageUrl ||
+                          "/logo.png"
+                        }
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-5 flex flex-col flex-grow">
+                      <h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">
+                        {product.name}
+                      </h3>
+                      <div
+                        className="text-sm text-stone-500 dark:text-stone-400 mt-1 flex-grow line-clamp-3"
+                        dangerouslySetInnerHTML={{
+                          __html: product.description,
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 w-full border-stone-300 dark:border-neutral-700 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-colors"
+                      >
+                        Lihat Produk
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
           <div className="text-center mt-12">
             <Button
               size="lg"
