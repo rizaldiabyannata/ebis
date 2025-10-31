@@ -24,7 +24,8 @@ type ProductWithVariants = Omit<PrismaProduct, "variants"> & {
 };
 
 interface PemesananFormProps {
-	products: ProductWithVariants[];
+  products: ProductWithVariants[];
+  selectedVariantId?: string;
 }
 
 const ItemSchema = z.object({
@@ -44,25 +45,37 @@ const OrderSchema = z.object({
 
 type OrderForm = z.infer<typeof OrderSchema>;
 
-export default function PemesananForm({ products }: PemesananFormProps) {
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const form = useForm<OrderForm>({
-		resolver: zodResolver(OrderSchema),
-		// Set initial default values based on the first available product and variant
-		defaultValues: {
-			name: "",
-			phone: "",
-			address: "",
-			paymentMethod: "COD", // Default payment method
-			items: [
-				{
-					productId: products[0]?.id ?? "",
-					variantId: products[0]?.variants[0]?.id ?? "",
-					quantity: 1,
-				},
-			],
-		},
-	});
+export default function PemesananForm({
+  products,
+  selectedVariantId,
+}: PemesananFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Find the initial product and variant based on selectedVariantId
+  const initialProduct =
+    products.find((p) =>
+      p.variants.some((v) => v.id === selectedVariantId)
+    ) || products[0];
+  const initialVariant =
+    initialProduct?.variants.find((v) => v.id === selectedVariantId) ||
+    initialProduct?.variants[0];
+
+  const form = useForm<OrderForm>({
+    resolver: zodResolver(OrderSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      address: "",
+      paymentMethod: "COD",
+      items: [
+        {
+          productId: initialProduct?.id ?? "",
+          variantId: initialVariant?.id ?? "",
+          quantity: 1,
+        },
+      ],
+    },
+  });
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,
 		name: "items",
@@ -291,7 +304,7 @@ export default function PemesananForm({ products }: PemesananFormProps) {
 						asChild
 						disabled={isSubmitting}
 					>
-                        <Link href="/e-commerce">Kembali</Link>
+                        <Link href="/shop">Kembali</Link>
                     </Button>
                 </div>
             </form>

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createOrderSchema, CreateOrderDetail } from '@/lib/validation';
 import { randomBytes } from 'crypto';
-
+import { sendWhatsAppMessage } from '@/lib/gowa';
+import { calculatePoDeliveryDate } from '@/lib/po-logic';
 /**
  * @openapi
  * /orders:
@@ -31,9 +32,9 @@ export async function GET() {
           include: {
             variant: {
               include: {
-                product: true
-              }
-            }
+                product: true,
+              },
+            },
           },
         },
         delivery: true,
@@ -44,7 +45,28 @@ export async function GET() {
         orderDate: 'desc',
       },
     });
-    return NextResponse.json(orders);
+
+    // Manually serialize Decimal fields
+    const serializedOrders = orders.map(order => ({
+      ...order,
+      subtotal: Number(order.subtotal),
+      totalDiscount: Number(order.totalDiscount),
+      totalFinal: Number(order.totalFinal),
+      orderDetails: order.orderDetails.map(detail => ({
+        ...detail,
+        priceAtOrder: Number(detail.priceAtOrder),
+      })),
+      delivery: order.delivery ? {
+        ...order.delivery,
+        deliveryFee: Number(order.delivery.deliveryFee),
+      } : null,
+      payments: order.payments.map(payment => ({
+        ...payment,
+        amount: Number(payment.amount),
+      })),
+    }));
+
+    return NextResponse.json(serializedOrders);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
@@ -107,6 +129,9 @@ export async function POST(request: Request) {
   const variantIds = orderDetails.map((item: CreateOrderDetail) => item.variantId);
     const variants = await prisma.productVariant.findMany({
       where: { id: { in: variantIds } },
+      include: {
+        product: true,
+      }
     });
 
     if (variants.length !== variantIds.length) {
@@ -151,6 +176,20 @@ export async function POST(request: Request) {
     const totalFinal = Math.max(0, subtotal - totalDiscount);
     const orderNumber = `ORDER-${randomBytes(4).toString('hex').toUpperCase()}-${Date.now()}`;
 
+    let scheduledDeliveryDate = new Date();
+    let isPoOrder = false;
+
+    for (const variant of variants) {
+      const poRule = (variant.product as any)?.preOrderRule;
+      if (poRule) {
+        isPoOrder = true;
+        const calculatedDate = calculatePoDeliveryDate(poRule, new Date());
+        if (calculatedDate > scheduledDeliveryDate) {
+          scheduledDeliveryDate = calculatedDate;
+        }
+      }
+    }
+
     const createdOrder = await prisma.$transaction(async (tx) => {
       for (const item of orderDetails) {
         await tx.productVariant.update({
@@ -185,11 +224,13 @@ export async function POST(request: Request) {
             }),
           },
           delivery: {
-            create: {
+            // Cast to any to satisfy Prisma's generated types for nested create
+            create: ({
               ...delivery,
               deliveryFee: 0,
-              status: 'PREPARING',
-            },
+              status: isPoOrder ? 'SCHEDULED' : 'PREPARING',
+              deliveryDate: isPoOrder ? scheduledDeliveryDate : new Date(),
+            } as any),
           },
           payments: {
             create: {
@@ -210,6 +251,66 @@ export async function POST(request: Request) {
 
       return order;
     });
+
+    const gowaApiUrl = process.env.GOWA_API_URL;
+    // If the Gowa API is configured, notify the admin group and the customer via WhatsApp.
+    if (gowaApiUrl) {
+      const fullOrderDetails = await prisma.order.findUnique({
+        where: { id: createdOrder.id },
+        include: {
+          orderDetails: {
+            include: {
+              variant: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+          delivery: true,
+        },
+      });
+
+      if (fullOrderDetails) {
+        const productList = fullOrderDetails.orderDetails.map(
+          (d) => `- ${d.quantity}x ${d.variant.product.name} (${d.variant.name})`
+        ).join('\n');
+
+        const deliveryInfo = fullOrderDetails.delivery;
+        const message = `
+*Pesanan Baru Masuk*
+*Nomor Pesanan:* ${fullOrderDetails.orderNumber}
+*Nama Pelanggan:* ${deliveryInfo?.recipientName}
+*No. Telepon:* ${deliveryInfo?.recipientPhone}
+*Alamat:* ${deliveryInfo?.address}
+
+*Detail Pesanan:*
+${productList}
+
+*Total:* Rp ${Number(fullOrderDetails.totalFinal).toLocaleString('id-ID')}
+        `.trim();
+
+        // Send to admin group if configured
+        const groupId = process.env.GOWA_GROUP_ID;
+        if (groupId) {
+          try {
+            await sendWhatsAppMessage(groupId, message);
+          } catch (e) {
+            console.error('Failed to send order notification to admin group:', e);
+          }
+        }
+
+        // Also send a notification to the customer phone (if available)
+        if (deliveryInfo?.recipientPhone) {
+          try {
+            // Send the same message to the customer; you may want to tailor this message later.
+            await sendWhatsAppMessage(deliveryInfo.recipientPhone, message);
+          } catch (e) {
+            console.error('Failed to send order notification to customer:', e);
+          }
+        }
+      }
+    }
 
     return NextResponse.json(createdOrder, { status: 201 });
 

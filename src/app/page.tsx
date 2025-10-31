@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,20 +35,27 @@ export default async function Home() {
     },
   });
 
+  const partners = await prisma.partner.findMany({
+    take: 4,
+    orderBy: {
+      name: "asc",
+    },
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 text-stone-800 dark:text-stone-200">
       <SiteHeader />
 
       <main>
         {/* Hero Section */}
-        <section className="relative py-20 md:py-32 border-b border-black/5 dark:border-white/5">
+        <section className="relative py-20 md:py-32 lg:px-12 border-b bg-[#f0ce95] dark:bg-[#a95633] dark:border-white/5">
           <div className="absolute inset-0 bg-gradient-to-b from-amber-100/50 to-stone-50 dark:from-amber-900/10 dark:to-neutral-950 -z-10"></div>
           <div className="container mx-auto grid md:grid-cols-2 gap-12 px-4 items-center">
             <div className="space-y-5 text-center md:text-left">
               <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-stone-800 to-stone-600 dark:from-stone-100 dark:to-stone-300">
                 Temukan Snack Favorit dan Unik Hanya di HepiBite
               </h1>
-              <p className="text-lg text-stone-600 dark:text-stone-400 max-w-prose mx-auto md:mx-0">
+              <p className="text-lg text-stone-600 dark:text-black max-w-prose mx-auto md:mx-0">
                 Jelajahi ribuan pilihan snack dari pedagang lokal terbaik.
                 Kualitas terjamin, rasa tak terlupakan.
               </p>
@@ -56,7 +65,7 @@ export default async function Home() {
                   className="rounded-full px-8 py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105"
                   asChild
                 >
-                  <Link href="/products">
+                  <Link href="/shop">
                     <ShoppingBag className="mr-2 h-5 w-5" />
                     Mulai Belanja
                   </Link>
@@ -64,7 +73,7 @@ export default async function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="rounded-full px-8 py-6 text-base font-bold border-stone-300 dark:border-neutral-700 hover:bg-stone-200/50 dark:hover:bg-neutral-800/50"
+                  className="rounded-full px-8 py-6 text-base font-bold border-stone-300 dark:border-neutral-700 hover:bg-stone-200/50 dark:hover:bg-neutral-800/50 dark:bg-black dark:text-white"
                   asChild
                 >
                   <Link href="#about">
@@ -79,7 +88,7 @@ export default async function Home() {
                 src="/Snack.png"
                 alt="Snack illustration"
                 fill
-                className="object-cover drop-shadow-2xl rounded-[30px]"
+                className="object-cover rounded-[30px]"
                 priority
               />
             </div>
@@ -99,43 +108,64 @@ export default async function Home() {
               Pilihan snack terbaik yang paling disukai pelanggan kami.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((product: ProductWithImages) => (
-              <div
-                key={product.id}
-                className="group relative border bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <Link
-                  href={`/e-commerce`}
-                  className="absolute inset-0 z-10"
-                  aria-label={product.name}
-                ></Link>
-                <div className="relative aspect-square w-full">
-                  <Image
-                    src={product.images[0]?.imageUrl || "/logo.png"}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 truncate">
-                    {product.description}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 w-full relative z-20 border-stone-300 dark:border-neutral-700 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-colors"
+          {(() => {
+            const single = products.length === 1;
+            const containerCls = single
+              ? "flex justify-center"
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8";
+            return (
+              <div className={containerCls}>
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    className={`group relative border bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col ${
+                      single ? "w-full max-w-md" : ""
+                    }`}
                   >
-                    Lihat Produk
-                  </Button>
-                </div>
+                    <Link
+                      href={`/shop?productId=${product.id}`}
+                      className="absolute inset-0 z-10"
+                      aria-label={product.name}
+                    ></Link>
+                    <div className="relative aspect-square w-full">
+                      <Image
+                        src={
+                          (
+                            product as unknown as {
+                              variants?: { imageUrl?: string | null }[];
+                            }
+                          ).variants?.[0]?.imageUrl ||
+                          product.images?.[0]?.imageUrl ||
+                          "/logo.png"
+                        }
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-5 flex flex-col flex-grow">
+                      <h3 className="font-semibold text-lg text-stone-800 dark:text-stone-100">
+                        {product.name}
+                      </h3>
+                      <div
+                        className="text-sm text-stone-500 dark:text-stone-400 mt-1 flex-grow line-clamp-3"
+                        dangerouslySetInnerHTML={{
+                          __html: product.description,
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 w-full border-stone-300 dark:border-neutral-700 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500 transition-colors"
+                      >
+                        Lihat Produk
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
           <div className="text-center mt-12">
             <Button
               size="lg"
@@ -143,7 +173,7 @@ export default async function Home() {
               className="rounded-full px-8 border-stone-300 dark:border-neutral-700 hover:bg-stone-100 dark:hover:bg-neutral-800"
               asChild
             >
-              <Link href="/products">
+              <Link href="/shop">
                 Lihat Semua Produk
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

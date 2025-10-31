@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
+import { CartProvider } from "@/contexts/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <main>
@@ -37,8 +38,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ModeToggle className="absolute top-4 right-4 z-10" />
-            {children}
+            <CartProvider>{children}</CartProvider>
           </ThemeProvider>
         </main>
         <Toaster />

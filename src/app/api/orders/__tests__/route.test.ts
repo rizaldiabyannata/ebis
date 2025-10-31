@@ -9,8 +9,9 @@ import { randomUUID } from 'crypto';
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
 describe('API /orders', () => {
-  const mockVariant1 = { id: randomUUID(), name: 'Variant 1', sku: 'V1', price: new Decimal(10), stock: 10, productId: randomUUID() };
-  const mockVariant2 = { id: randomUUID(), name: 'Variant 2', sku: 'V2', price: new Decimal(20), stock: 5, productId: randomUUID() };
+  const mockProduct = { id: randomUUID(), name: 'Test Product', description: 'A product for testing', preOrderRule: null, categoryId: randomUUID(), partnerId: null };
+  const mockVariant1 = { id: randomUUID(), name: 'Variant 1', sku: 'V1', price: new Decimal(10), stock: 10, productId: mockProduct.id, product: mockProduct };
+  const mockVariant2 = { id: randomUUID(), name: 'Variant 2', sku: 'V2', price: new Decimal(20), stock: 5, productId: mockProduct.id, product: mockProduct };
   const mockVoucher = { id: randomUUID(), code: 'SUMMER', discountType: 'FIXED_AMOUNT' as DiscountType, discountValue: new Decimal(5), validUntil: new Date(Date.now() + 86400000), stock: 10 };
 
   beforeEach(() => {

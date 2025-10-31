@@ -29,6 +29,9 @@ model Product {
   category    Category         @relation(fields: [categoryId], references: [id])
   variants    ProductVariant[]
   images      ProductImage[]
+  partnerId   String?          @map("partner_id") @db.Uuid
+  partner     Partner?         @relation(fields: [partnerId], references: [id])
+  preOrderRule Json?            @map("pre_order_rule")
 
   @@map("products")
 }
@@ -39,6 +42,7 @@ model ProductVariant {
   sku          String        @unique
   price        Decimal
   stock        Int
+  imageUrl     String?       @map("image_url")
   productId    String        @map("product_id") @db.Uuid
   product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   orderDetails OrderDetail[]
@@ -105,6 +109,7 @@ model Delivery {
   driverName     String? @map("driver_name") // Optional driver name for in-house delivery
   deliveryFee    Decimal @map("delivery_fee")
   status         String
+  deliveryDate   DateTime? @map("delivery_date")
   orderId        String  @unique @map("order_id") @db.Uuid // Unique enforces the 1-to-1 relationship
   order          Order   @relation(fields: [orderId], references: [id])
 
@@ -144,4 +149,14 @@ enum Role {
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
+}
+
+model Partner {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  imageUrl    String?   @map("image_url")
+  products    Product[]
+
+  @@map("partners")
 }

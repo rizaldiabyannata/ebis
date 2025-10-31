@@ -5,9 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { ModeToggle } from "./mode-toggle";
+import Cart from "./Cart";
 
 export default function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -17,7 +20,7 @@ export default function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/#products", label: "Products" },
     { href: "/#about", label: "About Us" },
-    { href: "/orders", label: "Daftar Pesanan" },
+    { href: "/shop/orders", label: "Daftar Pesanan" },
   ];
 
   return (
@@ -51,19 +54,11 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            className="hidden sm:inline-flex text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-neutral-800"
-            asChild
-          >
-            <Link href="/login">Login</Link>
-          </Button>
-          <Button
-            className="hidden sm:inline-flex bg-amber-500 hover:bg-amber-600 text-white"
-            asChild
-          >
-            <Link href="/register">Sign Up</Link>
-          </Button>
+          <div onClick={() => setIsCartOpen(!isCartOpen)}>
+            <Cart isOpen={isCartOpen} />
+          </div>
+
+          <ModeToggle />
 
           {/* Mobile Menu Button */}
           <button
@@ -91,15 +86,6 @@ export default function SiteHeader() {
               </Link>
             ))}
             <div className="border-t border-stone-200 dark:border-neutral-800 my-2"></div>
-            <Button variant="ghost" className="w-full" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white"
-              asChild
-            >
-              <Link href="/register">Sign Up</Link>
-            </Button>
           </nav>
         </div>
       )}

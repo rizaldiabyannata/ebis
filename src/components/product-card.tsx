@@ -27,24 +27,34 @@ import {
 export interface Product {
   id: string;
   name: string;
-  price: number;
   description: string;
   imageUrls: string[];
+  variants: {
+    id: string;
+    name: string;
+    price: number;
+    stock: number;
+    sku: string;
+  }[];
 }
 
 interface ProductCardProps {
   product: Product;
   isAdmin?: boolean;
   onDelete?: (productId: string) => void;
+  onEdit?: (productId: string) => void;
 }
 
 export function ProductCard({
   product,
   isAdmin = false,
   onDelete,
+  onEdit,
 }: ProductCardProps) {
   if (isAdmin) {
-    return <AdminProductCard product={product} onDelete={onDelete} />;
+    return (
+      <AdminProductCard product={product} onDelete={onDelete} onEdit={onEdit} />
+    );
   }
 
   return <UserProductCard product={product} />;
@@ -71,7 +81,11 @@ function UserProductCard({ product }: { product: Product }) {
               {product.description}
             </CardDescription>
             <p className="mt-4 text-xl font-semibold">
-              ${product.price.toFixed(2)}
+              $
+              {(product.variants && product.variants.length > 0
+                ? Math.min(...product.variants.map((v) => v.price))
+                : 0
+              ).toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -83,15 +97,22 @@ function UserProductCard({ product }: { product: Product }) {
 function AdminProductCard({
   product,
   onDelete,
+  onEdit,
 }: {
   product: Product;
   onDelete?: (productId: string) => void;
+  onEdit?: (productId: string) => void;
 }) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
   const handleDelete = () => {
     if (onDelete) {
       onDelete(product.id);
     }
   };
+
+  const lowestPrice = Math.min(...product.variants.map((v) => v.price));
+
   return (
     <Card className="w-full max-w-sm overflow-hidden rounded-lg shadow-lg">
       <CardHeader className="p-0">
@@ -106,12 +127,40 @@ function AdminProductCard({
       </CardHeader>
       <CardContent className="p-4">
         <CardTitle className="text-lg">{product.name}</CardTitle>
+        <p className="mt-2 text-sm text-gray-500">
+          {product.variants.length} variant(s)
+        </p>
         <p className="mt-4 text-xl font-semibold">
-          Rp{product.price.toFixed(2)}
+          Starts from Rp{lowestPrice.toFixed(2)}
         </p>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <AdminControls productId={product.id} onDelete={handleDelete} />
+      <CardFooter className="flex-col items-start p-4 pt-0">
+        <Button
+          onClick={() => setIsExpanded(!isExpanded)}
+          variant="link"
+          className="mb-2 px-0"
+        >
+          {isExpanded ? "Hide Variants" : "View Variants"}
+        </Button>
+        {isExpanded && (
+          <div className="w-full space-y-2">
+            {product.variants.map((variant) => (
+              <div key={variant.id} className="rounded-md border p-2 text-sm">
+                <p>
+                  <strong>{variant.name}</strong>
+                </p>
+                <p>Price: Rp{variant.price.toFixed(2)}</p>
+                <p>Stock: {variant.stock}</p>
+                <p>SKU: {variant.sku}</p>
+              </div>
+            ))}
+          </div>
+        )}
+        <AdminControls
+          productId={product.id}
+          onDelete={handleDelete}
+          onEdit={onEdit}
+        />
       </CardFooter>
     </Card>
   );
@@ -120,17 +169,22 @@ function AdminProductCard({
 function AdminControls({
   productId,
   onDelete,
+  onEdit,
 }: {
   productId: string;
   onDelete: () => void;
+  onEdit?: (id: string) => void;
 }) {
   return (
     <div className="flex w-full items-center justify-between gap-2">
       <Button asChild variant="outline" className="flex-1">
         <Link href={`/products/${productId}`}>Preview</Link>
       </Button>
-      <Button asChild className="flex-1 dark:text-white">
-        <Link href={`/admin/products/${productId}/edit`}>Update</Link>
+      <Button
+        className="flex-1 dark:text-white"
+        onClick={() => onEdit && onEdit(productId)}
+      >
+        Update
       </Button>
       <AlertDialog>
         <AlertDialogTrigger asChild>
