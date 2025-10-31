@@ -190,20 +190,20 @@ export default function OrdersPage() {
                             <div key={od.id} className="text-xs">
                               {od.variant.product.name} — {od.variant.name} (
                               {od.variant.sku}) × {od.quantity} @{" "}
-                              {Number(od.priceAtOrder).toFixed(2)}
+                              Rp{Number(od.priceAtOrder).toFixed(2)}
                             </div>
                           ))}
                         </div>
                       </td>
                       <td className="p-2">
                         <div className="text-xs">
-                          Subtotal: {o.subtotal.toFixed(2)}
+                          Subtotal: Rp{o.subtotal.toFixed(2)}
                         </div>
                         <div className="text-xs">
-                          Discount: {o.totalDiscount.toFixed(2)}
+                          Discount: Rp{o.totalDiscount.toFixed(2)}
                         </div>
                         <div className="text-xs font-medium">
-                          Total: {o.totalFinal.toFixed(2)}
+                          Total: Rp{o.totalFinal.toFixed(2)}
                         </div>
                       </td>
                       <td className="p-2">
@@ -217,7 +217,7 @@ export default function OrdersPage() {
                             <div>
                               Recipient: {d.recipientName} ({d.recipientPhone})
                             </div>
-                            <div>Fee: {Number(d.deliveryFee).toFixed(2)}</div>
+                            <div>Fee: Rp{Number(d.deliveryFee).toFixed(2)}</div>
                             {isEditing ? (
                               <>
                                 <select
@@ -280,7 +280,7 @@ export default function OrdersPage() {
                         <div className="space-y-1 text-xs">
                           {o.payments.map((p) => (
                             <div key={p.id}>
-                              {p.paymentMethod} — {Number(p.amount).toFixed(2)}{" "}
+                              {p.paymentMethod} — Rp{Number(p.amount).toFixed(2)}{" "}
                               ({new Date(p.paymentDate).toLocaleString()}) [
                               {p.status}]
                             </div>

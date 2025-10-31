@@ -255,7 +255,7 @@ export default function DeliveriesPage() {
                             {new Date(order.orderDate).toLocaleDateString()}
                           </div>
                           <div className="text-xs">
-                            Total: ${Number(order.totalFinal).toFixed(2)}
+                            Total: Rp{Number(order.totalFinal).toFixed(2)}
                           </div>
                           <Button
                             variant="link"
@@ -277,7 +277,7 @@ export default function DeliveriesPage() {
                             {delivery.address}
                           </div>
                           <div>
-                            Fee: ${Number(delivery.deliveryFee).toFixed(2)}
+                            Fee: Rp{Number(delivery.deliveryFee).toFixed(2)}
                           </div>
                         </div>
                       </td>
@@ -387,17 +387,17 @@ export default function DeliveriesPage() {
                           </div>
                           <div>Status: {selectedDelivery.order.status}</div>
                           <div>
-                            Subtotal: $
+                            Subtotal: Rp
                             {Number(selectedDelivery.order.subtotal).toFixed(2)}
                           </div>
                           <div>
-                            Discount: $
+                            Discount: Rp
                             {Number(
                               selectedDelivery.order.totalDiscount
                             ).toFixed(2)}
                           </div>
                           <div className="font-medium">
-                            Total: $
+                            Total: Rp
                             {Number(selectedDelivery.order.totalFinal).toFixed(
                               2
                             )}
@@ -414,7 +414,7 @@ export default function DeliveriesPage() {
                         <div className="space-y-1 text-sm">
                           {selectedDelivery.order.payments.map((payment) => (
                             <div key={payment.id}>
-                              {payment.paymentMethod} - $
+                              {payment.paymentMethod} - Rp
                               {Number(payment.amount).toFixed(2)} (
                               {payment.status})
                             </div>
@@ -441,7 +441,7 @@ export default function DeliveriesPage() {
                               </div>
                             </div>
                             <div className="font-medium">
-                              ${Number(detail.priceAtOrder).toFixed(2)}
+                              Rp{Number(detail.priceAtOrder).toFixed(2)}
                             </div>
                           </div>
                         ))}
@@ -462,7 +462,7 @@ export default function DeliveriesPage() {
                           {selectedDelivery.driverName || "Not assigned"}
                         </div>
                         <div>
-                          Delivery Fee: $
+                          Delivery Fee: Rp
                           {Number(selectedDelivery.deliveryFee).toFixed(2)}
                         </div>
                       </div>

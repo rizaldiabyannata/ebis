@@ -127,8 +127,10 @@ export default function CheckoutForm() {
             <span>Rp{subtotal.toLocaleString()}</span>
           </div>
           <div className="w-full flex justify-between text-sm text-muted-foreground">
-            <span>Biaya Pengiriman</span>
-            <span>Rp{(subtotal > 0 ? 10000 : 0).toLocaleString()}</span>
+            <span>
+              Biaya Pengiriman akan di Infokan oleh Admin Jika alamat pengiriman
+              lebih dari 5KM dari Teknik Unram
+            </span>
           </div>
           <div className="w-full flex justify-between font-bold text-lg">
             <span>Total</span>
@@ -187,7 +189,7 @@ export default function CheckoutForm() {
                 {...form.register("paymentMethod")}
               >
                 <option value="COD">Cash on Delivery (COD)</option>
-                <option value="BANK_TRANSFER">Transfer Bank</option>
+                <option value="DANA_TRANSFER">Transfer Dana</option>
               </select>
               {form.formState.errors.paymentMethod && (
                 <p className="text-sm text-destructive mt-1">

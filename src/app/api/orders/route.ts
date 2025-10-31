@@ -277,7 +277,9 @@ export async function POST(request: Request) {
         ).join('\n');
 
         const deliveryInfo = fullOrderDetails.delivery;
-        const message = `
+        const totalFormatted = Number(fullOrderDetails.totalFinal).toLocaleString('id-ID');
+
+        const groupMessage = `
 *Pesanan Baru Masuk*
 *Nomor Pesanan:* ${fullOrderDetails.orderNumber}
 *Nama Pelanggan:* ${deliveryInfo?.recipientName}
@@ -287,14 +289,14 @@ export async function POST(request: Request) {
 *Detail Pesanan:*
 ${productList}
 
-*Total:* Rp ${Number(fullOrderDetails.totalFinal).toLocaleString('id-ID')}
+*Total:* Rp ${totalFormatted}
         `.trim();
 
         // Send to admin group if configured
         const groupId = process.env.GOWA_GROUP_ID;
         if (groupId) {
           try {
-            await sendWhatsAppMessage(groupId, message);
+            await sendWhatsAppMessage(groupId, groupMessage);
           } catch (e) {
             console.error('Failed to send order notification to admin group:', e);
           }
@@ -303,8 +305,27 @@ ${productList}
         // Also send a notification to the customer phone (if available)
         if (deliveryInfo?.recipientPhone) {
           try {
-            // Send the same message to the customer; you may want to tailor this message later.
-            await sendWhatsAppMessage(deliveryInfo.recipientPhone, message);
+            // Tailor the customer message. If payment method is not COD, include payment instructions.
+            // Determine payment method from the created order (preferred) or the incoming payment payload
+            const paymentMethod = (createdOrder.payments && createdOrder.payments.length > 0)
+              ? (createdOrder.payments[0].paymentMethod as string)
+              : payment.paymentMethod;
+
+            let customerMessage = `Terima kasih, pesanan Anda telah diterima.\n*Nomor Pesanan:* ${fullOrderDetails.orderNumber}\n*Total:* Rp ${totalFormatted}`;
+
+            if (paymentMethod && paymentMethod !== 'COD') {
+              // Read DANA number from env (user will set this)
+              const danaNumber = process.env.DANA_NUMBER || process.env.PAYMENT_DANA_NUMBER || '';
+              if (danaNumber) {
+                customerMessage += `\n\nSilakan segera melakukan pembayaran sebesar Rp ${totalFormatted} ke nomor DANA: ${danaNumber}.\nSetelah melakukan pembayaran, mohon kirim bukti pembayaran (foto atau screenshot) ke chat ini agar pesanan segera diproses.`;
+              } else {
+                customerMessage += `\n\nSilakan segera melakukan pembayaran sebesar Rp ${totalFormatted} sesuai metode pembayaran yang Anda pilih.\nSetelah melakukan pembayaran, mohon kirim bukti pembayaran (foto atau screenshot) ke chat ini agar pesanan segera diproses.`;
+              }
+            } else {
+              customerMessage += `\n\nPembayaran akan dilakukan saat pengiriman (COD).`;
+            }
+
+            await sendWhatsAppMessage(deliveryInfo.recipientPhone, customerMessage);
           } catch (e) {
             console.error('Failed to send order notification to customer:', e);
           }

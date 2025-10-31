@@ -191,7 +191,7 @@ const createOrderDetailSchema = z.object({
 });
 
 const createDeliverySchema = z.object({
-  address: z.string().min(10, 'Address must be at least 10 characters long'),
+  address: z.string().min(3, 'Address must be at least 3 characters long'),
   recipientName: z.string().min(1, 'Recipient name is required'),
   recipientPhone: z.string().min(1, 'Recipient phone is required'),
 });
