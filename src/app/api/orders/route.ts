@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createOrderSchema, CreateOrderDetail } from '@/lib/validation';
 import { randomBytes } from 'crypto';
-
+import { sendWhatsAppMessage } from '@/lib/gowa';
+import { calculatePoDeliveryDate } from '@/lib/po-logic';
 /**
  * @openapi
  * /orders:
@@ -128,6 +129,9 @@ export async function POST(request: Request) {
   const variantIds = orderDetails.map((item: CreateOrderDetail) => item.variantId);
     const variants = await prisma.productVariant.findMany({
       where: { id: { in: variantIds } },
+      include: {
+        product: true,
+      }
     });
 
     if (variants.length !== variantIds.length) {
@@ -172,6 +176,19 @@ export async function POST(request: Request) {
     const totalFinal = Math.max(0, subtotal - totalDiscount);
     const orderNumber = `ORDER-${randomBytes(4).toString('hex').toUpperCase()}-${Date.now()}`;
 
+    let scheduledDeliveryDate = new Date();
+    let isPoOrder = false;
+
+    for (const variant of variants) {
+      if (variant.product.preOrderRule) {
+        isPoOrder = true;
+        const calculatedDate = calculatePoDeliveryDate(variant.product.preOrderRule, new Date());
+        if (calculatedDate > scheduledDeliveryDate) {
+          scheduledDeliveryDate = calculatedDate;
+        }
+      }
+    }
+
     const createdOrder = await prisma.$transaction(async (tx) => {
       for (const item of orderDetails) {
         await tx.productVariant.update({
@@ -209,7 +226,8 @@ export async function POST(request: Request) {
             create: {
               ...delivery,
               deliveryFee: 0,
-              status: 'PREPARING',
+              status: isPoOrder ? 'SCHEDULED' : 'PREPARING',
+              deliveryDate: isPoOrder ? scheduledDeliveryDate : new Date(),
             },
           },
           payments: {
@@ -231,6 +249,47 @@ export async function POST(request: Request) {
 
       return order;
     });
+
+    const groupId = process.env.GOWA_GROUP_ID;
+    if (groupId) {
+      const fullOrderDetails = await prisma.order.findUnique({
+        where: { id: createdOrder.id },
+        include: {
+          orderDetails: {
+            include: {
+              variant: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+          delivery: true,
+        },
+      });
+
+      if (fullOrderDetails) {
+        const productList = fullOrderDetails.orderDetails.map(
+          (d) => `- ${d.quantity}x ${d.variant.product.name} (${d.variant.name})`
+        ).join('\n');
+
+        const deliveryInfo = fullOrderDetails.delivery;
+        const message = `
+*Pesanan Baru Masuk*
+*Nomor Pesanan:* ${fullOrderDetails.orderNumber}
+*Nama Pelanggan:* ${deliveryInfo?.recipientName}
+*No. Telepon:* ${deliveryInfo?.recipientPhone}
+*Alamat:* ${deliveryInfo?.address}
+
+*Detail Pesanan:*
+${productList}
+
+*Total:* Rp ${Number(fullOrderDetails.totalFinal).toLocaleString('id-ID')}
+        `.trim();
+
+        await sendWhatsAppMessage(groupId, message);
+      }
+    }
 
     return NextResponse.json(createdOrder, { status: 201 });
 

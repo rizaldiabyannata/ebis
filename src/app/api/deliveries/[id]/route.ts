@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { updateDeliverySchema } from '@/lib/validation';
+import { sendWhatsAppMessage } from '@/lib/gowa';
 
 /**
  * @openapi
@@ -64,7 +65,50 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         ...(status && { status }),
         ...(driverName && { driverName }),
       },
+      include: {
+        order: {
+          include: {
+            orderDetails: {
+              include: {
+                variant: {
+                  include: {
+                    product: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
     });
+
+    if (status && updatedDelivery.order) {
+      const { recipientPhone, recipientName } = updatedDelivery;
+      const { orderNumber, orderDetails } = updatedDelivery.order;
+      let message = '';
+
+      const productList = orderDetails.map(
+        (detail: any) => `- ${detail.quantity}x ${detail.variant.product.name} (${detail.variant.name})`
+      ).join('\n');
+
+      switch (status) {
+        case 'PREPARING':
+          message = `Halo ${recipientName}, pesanan Anda #${orderNumber} sedang kami siapkan. Terima kasih!\n\nDetail Pesanan:\n${productList}`;
+          break;
+        case 'ON_DELIVERY':
+          message = `Kabar baik! Pesanan Anda #${orderNumber} sedang dalam perjalanan menuju alamat Anda.\n\nDetail Pesanan:\n${productList}`;
+          break;
+        case 'DELIVERED':
+          message = `Pesanan Anda #${orderNumber} telah berhasil diantar. Terima kasih telah berbelanja!\n\nDetail Pesanan:\n${productList}`;
+          break;
+        default:
+          break;
+      }
+
+      if (message) {
+        await sendWhatsAppMessage(recipientPhone, message);
+      }
+    }
 
     return NextResponse.json(updatedDelivery);
   } catch (error) {

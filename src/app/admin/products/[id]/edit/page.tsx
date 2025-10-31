@@ -19,6 +19,7 @@ import { Product } from "@/components/product-card";
 import { toast } from "sonner";
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import Image from "next/image";
+import { PreOrderRuleEditor } from "@/components/admin/pre-order-rule-editor";
 
 export default function ProductEditPage({
   params,
@@ -35,6 +36,7 @@ export default function ProductEditPage({
     defaultValues: {
       name: "",
       description: "",
+      preOrderRule: "",
       variants: [] as {
         name: string;
         price: number;
@@ -75,6 +77,7 @@ export default function ProductEditPage({
           id: data.id,
           name: data.name,
           description: data.description,
+          preOrderRule: data.preOrderRule ? JSON.stringify(data.preOrderRule) : "",
           variants: data.variants.map((v: any) => ({
             name: v.name,
             price: Number(v.price),
@@ -83,12 +86,14 @@ export default function ProductEditPage({
             imageUrl: v.imageUrl ?? null,
           })),
         };
-        setProduct(mapped as Product);
+        setProduct(mapped as any);
         form.reset({
           name: mapped.name,
           description: mapped.description,
+          preOrderRule: mapped.preOrderRule,
           variants: mapped.variants,
         });
+
       } catch (e: any) {
         setErr(e?.message ?? "Unknown error");
       } finally {
@@ -110,6 +115,7 @@ export default function ProductEditPage({
         body: JSON.stringify({
           name: values.name,
           description: values.description,
+          preOrderRule: values.preOrderRule ? JSON.parse(values.preOrderRule) : null,
           // Variants now own images; send the variants array directly. The
           // API will replace existing variants when provided.
           variants: values.variants,
@@ -163,6 +169,22 @@ export default function ProductEditPage({
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <SimpleEditor />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="preOrderRule"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pre-order Rule</FormLabel>
+                    <FormControl>
+                      <PreOrderRuleEditor
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

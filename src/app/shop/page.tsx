@@ -11,6 +11,7 @@ import { Product, ProductVariant, ProductImage } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteHeader from "@/components/SiteHeader";
 import { useCart } from "@/contexts/CartContext";
+import { getPoRuleDescription } from "@/lib/po-logic";
 
 type VariantWithImage = ProductVariant & { imageUrl?: string | null };
 type ImageRecord = ProductImage & { imageUrl: string };
@@ -275,6 +276,18 @@ function EcommercePageContent() {
                       __html: currentProduct.description || "",
                     }}
                   />
+
+                  {currentProduct.preOrderRule && (
+                    <motion.div
+                      key={`po-info-${productIndex}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35, duration: 0.4 }}
+                      className="mt-4 p-3 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-800 rounded-lg text-xs text-amber-800 dark:text-amber-200"
+                    >
+                      <strong>Produk Pre-Order:</strong> {getPoRuleDescription(currentProduct.preOrderRule)}
+                    </motion.div>
+                  )}
 
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
