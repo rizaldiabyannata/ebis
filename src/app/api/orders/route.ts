@@ -180,9 +180,10 @@ export async function POST(request: Request) {
     let isPoOrder = false;
 
     for (const variant of variants) {
-      if (variant.product.preOrderRule) {
+      const poRule = (variant.product as any)?.preOrderRule;
+      if (poRule) {
         isPoOrder = true;
-        const calculatedDate = calculatePoDeliveryDate(variant.product.preOrderRule, new Date());
+        const calculatedDate = calculatePoDeliveryDate(poRule, new Date());
         if (calculatedDate > scheduledDeliveryDate) {
           scheduledDeliveryDate = calculatedDate;
         }
@@ -223,12 +224,13 @@ export async function POST(request: Request) {
             }),
           },
           delivery: {
-            create: {
+            // Cast to any to satisfy Prisma's generated types for nested create
+            create: ({
               ...delivery,
               deliveryFee: 0,
               status: isPoOrder ? 'SCHEDULED' : 'PREPARING',
               deliveryDate: isPoOrder ? scheduledDeliveryDate : new Date(),
-            },
+            } as any),
           },
           payments: {
             create: {
@@ -250,8 +252,9 @@ export async function POST(request: Request) {
       return order;
     });
 
-    const groupId = process.env.GOWA_GROUP_ID;
-    if (groupId) {
+    const gowaApiUrl = process.env.GOWA_API_URL;
+    // If the Gowa API is configured, notify the admin group and the customer via WhatsApp.
+    if (gowaApiUrl) {
       const fullOrderDetails = await prisma.order.findUnique({
         where: { id: createdOrder.id },
         include: {
@@ -287,7 +290,25 @@ ${productList}
 *Total:* Rp ${Number(fullOrderDetails.totalFinal).toLocaleString('id-ID')}
         `.trim();
 
-        await sendWhatsAppMessage(groupId, message);
+        // Send to admin group if configured
+        const groupId = process.env.GOWA_GROUP_ID;
+        if (groupId) {
+          try {
+            await sendWhatsAppMessage(groupId, message);
+          } catch (e) {
+            console.error('Failed to send order notification to admin group:', e);
+          }
+        }
+
+        // Also send a notification to the customer phone (if available)
+        if (deliveryInfo?.recipientPhone) {
+          try {
+            // Send the same message to the customer; you may want to tailor this message later.
+            await sendWhatsAppMessage(deliveryInfo.recipientPhone, message);
+          } catch (e) {
+            console.error('Failed to send order notification to customer:', e);
+          }
+        }
       }
     }
 

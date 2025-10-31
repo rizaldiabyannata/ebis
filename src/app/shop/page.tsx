@@ -19,6 +19,8 @@ type ImageRecord = ProductImage & { imageUrl: string };
 type ProductWithRelations = Product & {
   variants: VariantWithImage[];
   images: ImageRecord[];
+  // some products may store a JSON-serialized preOrderRule field
+  preOrderRule?: unknown | null;
 };
 
 function EcommercePageContent() {
@@ -277,7 +279,7 @@ function EcommercePageContent() {
                     }}
                   />
 
-                  {currentProduct.preOrderRule && (
+                  {Boolean(currentProduct.preOrderRule) && (
                     <motion.div
                       key={`po-info-${productIndex}`}
                       initial={{ opacity: 0, y: 10 }}
@@ -285,7 +287,8 @@ function EcommercePageContent() {
                       transition={{ delay: 0.35, duration: 0.4 }}
                       className="mt-4 p-3 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-800 rounded-lg text-xs text-amber-800 dark:text-amber-200"
                     >
-                      <strong>Produk Pre-Order:</strong> {getPoRuleDescription(currentProduct.preOrderRule)}
+                      <strong>Produk Pre-Order:</strong>{" "}
+                      {getPoRuleDescription(currentProduct.preOrderRule)}
                     </motion.div>
                   )}
 

@@ -98,9 +98,9 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         case 'ON_DELIVERY':
           message = `Kabar baik! Pesanan Anda #${orderNumber} sedang dalam perjalanan menuju alamat Anda.\n\nDetail Pesanan:\n${productList}`;
           break;
-        case 'DELIVERED':
-          message = `Pesanan Anda #${orderNumber} telah berhasil diantar. Terima kasih telah berbelanja!\n\nDetail Pesanan:\n${productList}`;
-          break;
+        // case 'DELIVERED':
+        //   message = `Pesanan Anda #${orderNumber} telah berhasil diantar. Terima kasih telah berbelanja!\n\nDetail Pesanan:\n${productList}`;
+        //   break;
         default:
           break;
       }

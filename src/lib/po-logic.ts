@@ -32,25 +32,27 @@ interface PoRuleSchedule {
  * @param orderDate - The date the order was placed.
  * @returns The calculated delivery date. Returns the original order date if the rule is invalid or doesn't apply.
  */
-export const calculatePoDeliveryDate = (preOrderRule: any, orderDate: Date): Date => {
-  if (!preOrderRule || typeof preOrderRule !== 'object' || !preOrderRule.type) {
+export const calculatePoDeliveryDate = (preOrderRule: unknown, orderDate: Date): Date => {
+  if (!preOrderRule || typeof preOrderRule !== 'object' || !(preOrderRule as any).type) {
     return orderDate;
   }
 
   const deliveryDate = new Date(orderDate);
   const orderDay = orderDate.getDay();
 
+  const ruleAny = preOrderRule as any;
+
   // --- Rule Type: offset ---
-  if (preOrderRule.type === 'offset') {
-    const rule = preOrderRule as PoRuleOffset;
+  if (ruleAny.type === 'offset') {
+    const rule = ruleAny as PoRuleOffset;
     if (typeof rule.days === 'number' && rule.days > 0) {
       deliveryDate.setDate(orderDate.getDate() + rule.days);
     }
   }
 
   // --- Rule Type: schedule ---
-  if (preOrderRule.type === 'schedule') {
-    const rule = preOrderRule as PoRuleSchedule;
+  if (ruleAny.type === 'schedule') {
+    const rule = ruleAny as PoRuleSchedule;
     if (rule.rules && Array.isArray(rule.rules)) {
       for (const scheduleItem of rule.rules) {
         if (scheduleItem.orderDays.includes(orderDay)) {
@@ -75,20 +77,22 @@ export const calculatePoDeliveryDate = (preOrderRule: any, orderDate: Date): Dat
  * @param preOrderRule - The pre-order rule object.
  * @returns A string describing the rule, or an empty string if the rule is invalid.
  */
-export const getPoRuleDescription = (preOrderRule: any): string => {
-  if (!preOrderRule || typeof preOrderRule !== 'object' || !preOrderRule.type) {
+export const getPoRuleDescription = (preOrderRule: unknown): string => {
+  if (!preOrderRule || typeof preOrderRule !== 'object' || !(preOrderRule as any).type) {
     return "";
   }
 
-  if (preOrderRule.type === 'offset') {
-    const days = preOrderRule.days || 0;
+  const ruleAny = preOrderRule as any;
+
+  if (ruleAny.type === 'offset') {
+    const days = ruleAny.days || 0;
     if (days <= 0) return "";
     return `Akan dikirimkan ${days} hari setelah pemesanan.`;
   }
 
-  if (preOrderRule.type === 'schedule' && preOrderRule.rules && preOrderRule.rules.length > 0) {
+  if (ruleAny.type === 'schedule' && ruleAny.rules && ruleAny.rules.length > 0) {
     const weekDays = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-    const rule = preOrderRule.rules[0];
+    const rule = ruleAny.rules[0];
     const orderDays = rule.orderDays.map((d: number) => weekDays[d]).join(', ');
     const deliveryDay = weekDays[rule.deliveryDay];
     return `Pesanan yang dibuat pada hari ${orderDays} akan dikirimkan pada hari ${deliveryDay} berikutnya.`;
