@@ -81,7 +81,8 @@ function UserProductCard({ product }: { product: Product }) {
               {product.description}
             </CardDescription>
             <p className="mt-4 text-xl font-semibold">
-              Rp{(product.variants && product.variants.length > 0
+              Rp
+              {(product.variants && product.variants.length > 0
                 ? Math.min(...product.variants.map((v) => v.price))
                 : 0
               ).toFixed(2)}

@@ -189,8 +189,8 @@ export default function OrdersPage() {
                           {o.orderDetails.map((od) => (
                             <div key={od.id} className="text-xs">
                               {od.variant.product.name} — {od.variant.name} (
-                              {od.variant.sku}) × {od.quantity} @{" "}
-                              Rp{Number(od.priceAtOrder).toFixed(2)}
+                              {od.variant.sku}) × {od.quantity} @ Rp
+                              {Number(od.priceAtOrder).toFixed(2)}
                             </div>
                           ))}
                         </div>
@@ -280,8 +280,9 @@ export default function OrdersPage() {
                         <div className="space-y-1 text-xs">
                           {o.payments.map((p) => (
                             <div key={p.id}>
-                              {p.paymentMethod} — Rp{Number(p.amount).toFixed(2)}{" "}
-                              ({new Date(p.paymentDate).toLocaleString()}) [
+                              {p.paymentMethod} — Rp
+                              {Number(p.amount).toFixed(2)} (
+                              {new Date(p.paymentDate).toLocaleString()}) [
                               {p.status}]
                             </div>
                           ))}
